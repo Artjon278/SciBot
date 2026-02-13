@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "952847155396",
+    "project_id": "scibot-1ab3c",
+    "storage_bucket": "scibot-1ab3c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:952847155396:android:f93409813d3c104cf68991",
+        "android_client_info": {
+          "package_name": "com.example.scibot"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA9RIqIxLUCfts1QdvcmT3t2ssldvXznpw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
