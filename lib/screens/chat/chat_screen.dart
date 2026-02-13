@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:provider/provider.dart';
 import '../../services/chat_service.dart';
-import '../../widgets/scibot_mascot.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});

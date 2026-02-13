@@ -16,41 +16,74 @@ import 'screens/splash/splash_screen.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Inicializo Firebase
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  
-  // Ngarko variablat e mjedisit
-  await dotenv.load(fileName: '.env');
-  
-  // Vendos stilin e system UI
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-    ),
-  );
+  try {
+    // Inicializo Firebase
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    
+    // Ngarko variablat e mjedisit
+    await dotenv.load(fileName: '.env');
+    
+    // Vendos stilin e system UI
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+      ),
+    );
 
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => ThemeProvider()),
-        ChangeNotifierProvider(create: (_) => AuthService()),
-        ChangeNotifierProvider(create: (_) => ChatService()),
-        ChangeNotifierProvider(create: (_) => QuizStatsService()),
-        ChangeNotifierProxyProvider<AuthService, HomeworkService>(
-          create: (context) => HomeworkService(context.read<AuthService>()),
-          update: (context, auth, previous) => previous!..updateAuth(auth),
+    runApp(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => ThemeProvider()),
+          ChangeNotifierProvider(create: (_) => AuthService()),
+          ChangeNotifierProvider(create: (_) => ChatService()),
+          ChangeNotifierProvider(create: (_) => QuizStatsService()),
+          ChangeNotifierProxyProvider<AuthService, HomeworkService>(
+            create: (context) => HomeworkService(context.read<AuthService>()),
+            update: (context, auth, previous) => previous!..updateAuth(auth),
+          ),
+          ChangeNotifierProvider(create: (_) {
+            final service = BotHelperService();
+            service.loadPreferences();
+            return service;
+          }),
+        ],
+        child: const SciBot(),
+      ),
+    );
+  } catch (e, stackTrace) {
+    print('Error initializing app: $e');
+    print('Stack trace: $stackTrace');
+    runApp(
+      MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Gabim në inicializimin e aplikacionit',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    e.toString(),
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
-        ChangeNotifierProvider(create: (_) {
-          final service = BotHelperService();
-          service.loadPreferences();
-          return service;
-        }),
-      ],
-      child: const SciBot(),
-    ),
-  );
+      ),
+    );
+  }
 }
 
 class SciBot extends StatelessWidget {
