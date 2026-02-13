@@ -86,7 +86,7 @@ class _ChallengeSolveScreenState extends State<ChallengeSolveScreen> with Single
     });
   }
 
-  void _sendMessage() {
+  Future<void> _sendMessage() async {
     if (_answerController.text.trim().isEmpty) return;
 
     final userMessage = _answerController.text.trim();
@@ -99,49 +99,53 @@ class _ChallengeSolveScreenState extends State<ChallengeSolveScreen> with Single
     });
     _answerController.clear();
 
-    // Simulate AI response (will be replaced with Gemini API)
-    Future.delayed(const Duration(milliseconds: 800), () {
-      setState(() {
-        _isLoading = false;
-        _chatMessages.add({
-          'role': 'bot',
-          'content': _generateResponse(userMessage),
-        });
-      });
-    });
-  }
-
-  String _generateResponse(String userMessage) {
+    // Check for hint requests locally first
     final lowerMessage = userMessage.toLowerCase();
-    
-    // Check for help requests
-    if (lowerMessage.contains('ndihmë') || lowerMessage.contains('ndihmo') || lowerMessage.contains('hint') || lowerMessage.contains('sugjerim')) {
+    if (lowerMessage.contains('sugjerim') || lowerMessage.contains('ndihmë') || lowerMessage.contains('hint')) {
       if (_currentHintIndex < widget.challenge.hints.length) {
         final hint = widget.challenge.hints[_currentHintIndex];
         _currentHintIndex++;
-        return '💡 **Sugjerim $_currentHintIndex:**\n\n$hint\n\n${_currentHintIndex < widget.challenge.hints.length ? "Kërko përsëri nëse të duhet tjetër sugjerim." : "Ky ishte sugjerimi i fundit!"}';
-      } else {
-        return '📚 Të kam dhënë të gjitha sugjerimet! Provo të zgjidhësh sfidën me informacionin që ke.';
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+            _chatMessages.add({
+              'role': 'bot',
+              'content': '💡 **Sugjerim $_currentHintIndex:**\n\n$hint\n\n${_currentHintIndex < widget.challenge.hints.length ? "Kërko përsëri nëse të duhet tjetër sugjerim." : "Ky ishte sugjerimi i fundit!"}',
+            });
+          });
+        }
+        return;
       }
     }
 
-    // Check for formula/equation related answers for chemistry
-    if (widget.challenge.subject == 'Kimi') {
-      if (lowerMessage.contains('h2o') || lowerMessage.contains('nacl') || lowerMessage.contains('fe2o3')) {
-        return '✅ Shumë mirë! Po punon me formulat e duhura. Vazhdo kështu!\n\nA mund të më shpjegosh hapat e zgjidhjes?';
+    // Use Gemini API for real AI responses
+    try {
+      final gemini = GeminiService();
+      final response = await gemini.sendMessage(
+        userMessage,
+        context: 'Lënda: ${widget.challenge.subject}\nSfida: ${widget.challenge.title}\nPërshkrimi: ${widget.challenge.description}\nNdihmo nxënësin por mos jep përgjigjen direkt. Udhëzo hap pas hapi.',
+        useHistory: false,
+      );
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _chatMessages.add({
+            'role': 'bot',
+            'content': response,
+          });
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _chatMessages.add({
+            'role': 'bot',
+            'content': '⚠️ Gabim në lidhje me AI. Provo përsëri.',
+          });
+        });
       }
     }
-
-    // Generic encouraging responses
-    final responses = [
-      '🤔 Interesante! Më trego më shumë rreth arsyetimit tënd.',
-      '👍 Po shkon mirë! Çfarë hapi tjetër do të bësh?',
-      '📝 E kuptova. A mund të shpjegosh si arrite në këtë përfundim?',
-      '💭 Mendo pak më thellë. Çfarë formulash ose konceptesh mund të përdorësh?',
-      '🎯 Je në rrugë të mirë! Vazhdo me hapat e tjerë.',
-    ];
-    
-    return responses[DateTime.now().millisecond % responses.length];
   }
 
   void _showSolution() {

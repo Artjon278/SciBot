@@ -44,8 +44,22 @@ class _FormulaPuzzleScreenState extends State<FormulaPuzzleScreen> {
 
   void _checkAnswer() {
     String userFormula = _buildFormula(_selectedElements);
+    
+    bool correct;
+    if (widget.challenge.puzzleType == 'balance') {
+      // For balance puzzles, compare the normalized equation string
+      final userNorm = userFormula.replaceAll(' ', '');
+      final correctNorm = (widget.challenge.correctAnswer ?? '').replaceAll(' ', '');
+      correct = userNorm == correctNorm;
+    } else {
+      // For formula puzzles, compare by element counts
+      final userCounts = _countElements(_selectedElements);
+      final correctCounts = _parseFormulaCounts(widget.challenge.correctAnswer ?? '');
+      correct = _mapsEqual(userCounts, correctCounts);
+    }
+    
     setState(() {
-      _isCorrect = userFormula == widget.challenge.correctAnswer;
+      _isCorrect = correct;
       _showResult = true;
     });
 
@@ -54,6 +68,52 @@ class _FormulaPuzzleScreenState extends State<FormulaPuzzleScreen> {
     } else {
       _showAICheckDialog(userFormula);
     }
+  }
+
+  Map<String, int> _countElements(List<String> elements) {
+    final counts = <String, int>{};
+    for (final e in elements) {
+      counts[e] = (counts[e] ?? 0) + 1;
+    }
+    return counts;
+  }
+
+  Map<String, int> _parseFormulaCounts(String formula) {
+    // Parse formula like "H₂O", "NaCl", "H₂SO₄", "C₆H₁₂O₆"
+    final counts = <String, int>{};
+    final subscriptMap = {'₀': 0, '₁': 1, '₂': 2, '₃': 3, '₄': 4, '₅': 5, '₆': 6, '₇': 7, '₈': 8, '₉': 9};
+
+    String currentElement = '';
+    String currentNum = '';
+
+    for (int i = 0; i < formula.length; i++) {
+      final ch = formula[i];
+      if (subscriptMap.containsKey(ch)) {
+        currentNum += subscriptMap[ch].toString();
+      } else if (ch.toUpperCase() == ch && ch.toLowerCase() != ch) {
+        // Uppercase letter = start of new element
+        if (currentElement.isNotEmpty) {
+          counts[currentElement] = (counts[currentElement] ?? 0) + (currentNum.isEmpty ? 1 : int.parse(currentNum));
+          currentNum = '';
+        }
+        currentElement = ch;
+      } else if (ch.toLowerCase() == ch && ch.toUpperCase() != ch) {
+        // Lowercase letter = continuation of element
+        currentElement += ch;
+      }
+    }
+    if (currentElement.isNotEmpty) {
+      counts[currentElement] = (counts[currentElement] ?? 0) + (currentNum.isEmpty ? 1 : int.parse(currentNum));
+    }
+    return counts;
+  }
+
+  bool _mapsEqual(Map<String, int> a, Map<String, int> b) {
+    if (a.length != b.length) return false;
+    for (final key in a.keys) {
+      if (a[key] != b[key]) return false;
+    }
+    return true;
   }
 
   Future<void> _showAICheckDialog(String userFormula) async {
@@ -367,13 +427,17 @@ class _FormulaPuzzleScreenState extends State<FormulaPuzzleScreen> {
     
     // Build formula string
     StringBuffer formula = StringBuffer();
-    // Order: C, H, then alphabetically
+    // Order: electropositive first (metals before non-metals), then C, H, rest alphabetical
+    const elementOrder = {
+      'Na': 0, 'K': 1, 'Ca': 2, 'Mg': 3, 'Fe': 4, 'Al': 5, 'Zn': 6,
+      'C': 10, 'H': 11,
+      'N': 20, 'P': 21, 'S': 22, 'O': 23, 'F': 24, 'Cl': 25, 'Br': 26, 'I': 27,
+    };
     List<String> orderedElements = counts.keys.toList();
     orderedElements.sort((a, b) {
-      if (a == 'C') return -1;
-      if (b == 'C') return 1;
-      if (a == 'H') return -1;
-      if (b == 'H') return 1;
+      final aOrder = elementOrder[a] ?? 15;
+      final bOrder = elementOrder[b] ?? 15;
+      if (aOrder != bOrder) return aOrder.compareTo(bOrder);
       return a.compareTo(b);
     });
     

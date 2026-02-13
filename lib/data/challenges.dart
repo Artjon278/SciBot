@@ -252,7 +252,7 @@ class ChallengesData {
       difficulty: 'mesatar',
       iconEmoji: '⚖️',
       puzzleType: 'balance',
-      puzzleElements: ['2', 'H₂', '+', '1', 'O₂', '→', '2', 'H₂O'],
+      puzzleElements: ['2', 'H₂', ' + ', 'O₂', ' → ', '2', 'H₂O'],
       correctAnswer: '2H₂ + O₂ → 2H₂O',
       hints: [
         'Numëro atomet e H në të dyja anët',

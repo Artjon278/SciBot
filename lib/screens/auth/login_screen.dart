@@ -162,17 +162,13 @@ class _LoginScreenState extends State<LoginScreen>
                   Center(
                     child: Column(
                       children: [
-                        Container(
-                          width: 72,
-                          height: 72,
-                          decoration: BoxDecoration(
-                            color: isDark ? Colors.white : Colors.black,
-                            borderRadius: BorderRadius.circular(18),
-                          ),
-                          child: Icon(
-                            Icons.science_outlined,
-                            color: isDark ? Colors.black : Colors.white,
-                            size: 36,
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(18),
+                          child: Image.asset(
+                            isDark ? 'assets/images/1.png' : 'assets/images/sci-removebg-preview.png',
+                            width: 72,
+                            height: 72,
+                            fit: BoxFit.cover,
                           ),
                         ),
                         const SizedBox(height: 20),

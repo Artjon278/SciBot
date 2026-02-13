@@ -145,6 +145,22 @@ Rregulla:
     }
   }
   
+  /// Nxjerr JSON objekt nga teksti - gjen { e parë dhe } e fundit
+  String? _extractJson(String text) {
+    final start = text.indexOf('{');
+    final end = text.lastIndexOf('}');
+    if (start == -1 || end == -1 || end <= start) return null;
+    return text.substring(start, end + 1);
+  }
+
+  /// Nxjerr JSON array nga teksti
+  String? _extractJsonArray(String text) {
+    final start = text.indexOf('[');
+    final end = text.lastIndexOf(']');
+    if (start == -1 || end == -1 || end <= start) return null;
+    return text.substring(start, end + 1);
+  }
+
   /// Shton mesazh në histori
   void _addToHistory(String role, String text) {
     _chatHistory.add(ChatHistoryItem(role: role, text: text));
@@ -209,9 +225,8 @@ Rregulla:
       final response = await sendMessage(prompt);
       
       // Mundohu të nxjerrësh JSON nga përgjigja
-      final jsonMatch = RegExp(r'\{[\s\S]*\}').firstMatch(response);
-      if (jsonMatch != null) {
-        final jsonStr = jsonMatch.group(0)!;
+      final jsonStr = _extractJson(response);
+      if (jsonStr != null) {
         return jsonDecode(jsonStr) as Map<String, dynamic>;
       }
       return null;
@@ -238,9 +253,9 @@ Rregulla: shqip, shkolle e mesme, opsione bindëse, shpjegime koncize.
 
     try {
       final response = await sendMessage(prompt, useHistory: false);
-      final jsonMatch = RegExp(r'\[[\s\S]*\]').firstMatch(response);
-      if (jsonMatch != null) {
-        final decoded = jsonDecode(jsonMatch.group(0)!);
+      final jsonArrayStr = _extractJsonArray(response);
+      if (jsonArrayStr != null) {
+        final decoded = jsonDecode(jsonArrayStr);
         if (decoded is List) {
           return decoded.cast<Map<String, dynamic>>();
         }
@@ -286,17 +301,16 @@ Sfida: $challengeDescription
 ${correctAnswer != null ? 'Saktë: $correctAnswer' : ''}
 Nxënësi: $userAnswer
 
-VETËM JSON:
-{"isCorrect":true/false,"score":0-100,"feedback":"inkurajues,shqip","correctAnswer":"...","explanation":"hapat e zgjidhjes"}
+VETËM JSON (isCorrect duhet të jetë true ose false, score numër 0-100):
+{"isCorrect":false,"score":50,"feedback":"inkurajues,shqip","correctAnswer":"...","explanation":"hapat e zgjidhjes"}
 ''';
 
     try {
       final response = await sendMessage(prompt, useHistory: false);
       
       // Nxjerr JSON nga përgjigja
-      final jsonMatch = RegExp(r'\{[\s\S]*\}').firstMatch(response);
-      if (jsonMatch != null) {
-        final jsonStr = jsonMatch.group(0)!;
+      final jsonStr = _extractJson(response);
+      if (jsonStr != null) {
         final result = jsonDecode(jsonStr) as Map<String, dynamic>;
         return {
           'isCorrect': result['isCorrect'] ?? false,
@@ -339,14 +353,23 @@ VETËM JSON:
       final bytes = await imageFile.readAsBytes();
       final base64Image = base64Encode(bytes);
       
-      // Merr llojin e imazhit
+      // Merr llojin e skedarit
+      final path = imageFile.path.toLowerCase();
       String mimeType = 'image/jpeg';
-      if (imageFile.path.toLowerCase().endsWith('.png')) {
+      if (path.endsWith('.png')) {
         mimeType = 'image/png';
-      } else if (imageFile.path.toLowerCase().endsWith('.gif')) {
+      } else if (path.endsWith('.gif')) {
         mimeType = 'image/gif';
-      } else if (imageFile.path.toLowerCase().endsWith('.webp')) {
+      } else if (path.endsWith('.webp')) {
         mimeType = 'image/webp';
+      } else if (path.endsWith('.pdf')) {
+        mimeType = 'application/pdf';
+      } else if (path.endsWith('.docx')) {
+        mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+      } else if (path.endsWith('.doc')) {
+        mimeType = 'application/msword';
+      } else if (path.endsWith('.txt')) {
+        mimeType = 'text/plain';
       }
 
       // Ndërto prompt-in sipas modalitetit
@@ -526,9 +549,9 @@ Ndaji saktë çdo ushtrim. Tekst komplet. VETËM JSON.
         final candidates = data['candidates'] as List?;
         if (candidates != null && candidates.isNotEmpty) {
           final text = candidates[0]['content']['parts'][0]['text'] ?? '';
-          final jsonMatch = RegExp(r'\[[\s\S]*\]').firstMatch(text);
-          if (jsonMatch != null) {
-            final decoded = jsonDecode(jsonMatch.group(0)!);
+          final jsonArrayStr = _extractJsonArray(text);
+          if (jsonArrayStr != null) {
+            final decoded = jsonDecode(jsonArrayStr);
             if (decoded is List) {
               final results = <Map<String, String>>[];
               for (final e in decoded) {
@@ -614,9 +637,9 @@ Ndaji saktë çdo ushtrim. Tekst komplet. VETËM JSON.
         final candidates = data['candidates'] as List?;
         if (candidates != null && candidates.isNotEmpty) {
           final text = candidates[0]['content']['parts'][0]['text'] ?? '';
-          final jsonMatch = RegExp(r'\[[\s\S]*\]').firstMatch(text);
-          if (jsonMatch != null) {
-            final decoded = jsonDecode(jsonMatch.group(0)!);
+          final jsonArrayStr = _extractJsonArray(text);
+          if (jsonArrayStr != null) {
+            final decoded = jsonDecode(jsonArrayStr);
             if (decoded is List) {
               final results = <Map<String, String>>[];
               for (final e in decoded) {

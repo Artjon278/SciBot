@@ -9,7 +9,8 @@ import 'math_solve_screen.dart';
 import 'photo_lab_screen.dart';
 
 class LabScreen extends StatefulWidget {
-  const LabScreen({super.key});
+  final VoidCallback? onBack;
+  const LabScreen({super.key, this.onBack});
 
   @override
   State<LabScreen> createState() => _LabScreenState();
@@ -38,7 +39,7 @@ class _LabScreenState extends State<LabScreen> {
                   Row(
                     children: [
                       GestureDetector(
-                        onTap: () => Navigator.pop(context),
+                        onTap: () => widget.onBack != null ? widget.onBack!() : Navigator.pop(context),
                         child: Icon(
                           Icons.arrow_back,
                           color: theme.colorScheme.onSurface,
@@ -240,7 +241,7 @@ class _LabScreenState extends State<LabScreen> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Ngarko foto - AI do ta analizojë dhe ndihmojë',
+                      'Ngarko foto ose dokument - AI do ta analizojë',
                       style: theme.textTheme.bodyMedium,
                     ),
                   ],

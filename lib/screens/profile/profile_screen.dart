@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../services/auth_service.dart';
+import '../../services/streak_service.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -302,7 +303,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                         ),
 
-                        const SizedBox(height: 40),
+                        const SizedBox(height: 24),
+
+                        // Streak stats
+                        Consumer<StreakService>(
+                          builder: (context, streak, _) {
+                            return _buildStreakSection(context, streak, isDark);
+                          },
+                        ),
+
+                        const SizedBox(height: 24),
 
                         // App info
                         Container(
@@ -321,10 +331,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                           child: Column(
                             children: [
-                              Icon(
-                                Icons.science_outlined,
-                                size: 32,
-                                color: theme.colorScheme.secondary,
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.asset(
+                                  isDark ? 'assets/images/1.png' : 'assets/images/sci-removebg-preview.png',
+                                  width: 32,
+                                  height: 32,
+                                  fit: BoxFit.cover,
+                                ),
                               ),
                               const SizedBox(height: 10),
                               Text(
@@ -364,6 +378,118 @@ class _ProfileScreenState extends State<ProfileScreen> {
           fontWeight: FontWeight.w600,
           color: theme.colorScheme.onSurface,
         ),
+      ),
+    );
+  }
+
+  Widget _buildStreakSection(BuildContext context, StreakService streak, bool isDark) {
+    final theme = Theme.of(context);
+    final fireColor = streak.currentStreak >= 7
+        ? Colors.deepOrange
+        : streak.currentStreak >= 3
+            ? Colors.orange
+            : Colors.amber;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: streak.currentStreak > 0
+            ? LinearGradient(
+                colors: [
+                  fireColor.withOpacity(isDark ? 0.15 : 0.1),
+                  fireColor.withOpacity(isDark ? 0.05 : 0.02),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              )
+            : null,
+        color: streak.currentStreak > 0
+            ? null
+            : (isDark ? Colors.white.withOpacity(0.06) : Colors.black.withOpacity(0.04)),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: streak.currentStreak > 0
+              ? fireColor.withOpacity(0.3)
+              : (isDark ? Colors.white.withOpacity(0.08) : Colors.black.withOpacity(0.06)),
+        ),
+      ),
+      child: Column(
+        children: [
+          Text(
+            streak.currentStreak > 0 ? '🔥' : '💤',
+            style: const TextStyle(fontSize: 36),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            streak.currentStreak > 0
+                ? '${streak.currentStreak} ditë streak!'
+                : 'Asnjë streak aktiv',
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: streak.currentStreak > 0 ? fireColor : null,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: _buildStreakStat(
+                  context,
+                  label: 'Rekord',
+                  value: '${streak.longestStreak}',
+                  icon: '🏆',
+                  isDark: isDark,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildStreakStat(
+                  context,
+                  label: 'Ditë totale',
+                  value: '${streak.totalActiveDays}',
+                  icon: '📅',
+                  isDark: isDark,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStreakStat(
+    BuildContext context, {
+    required String label,
+    required String value,
+    required String icon,
+    required bool isDark,
+  }) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+      decoration: BoxDecoration(
+        color: isDark ? Colors.white.withOpacity(0.06) : Colors.white.withOpacity(0.7),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
+          Text(icon, style: const TextStyle(fontSize: 18)),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          Text(
+            label,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.secondary,
+            ),
+          ),
+        ],
       ),
     );
   }

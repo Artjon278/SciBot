@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/theme_provider.dart';
 import '../../services/gemini_service.dart';
@@ -17,6 +18,7 @@ class _PhotoLabScreenState extends State<PhotoLabScreen> with SingleTickerProvid
   final GeminiService _gemini = GeminiService();
   
   File? _selectedImage;
+  bool _isDocument = false;
   String? _selectedMode;
   String? _result;
   bool _isLoading = false;
@@ -106,32 +108,60 @@ class _PhotoLabScreenState extends State<PhotoLabScreen> with SingleTickerProvid
     }
   }
 
+  Future<void> _pickDocument() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf', 'doc', 'docx', 'txt', 'jpg', 'jpeg', 'png', 'webp'],
+      );
+      if (result == null || result.files.single.path == null) return;
+
+      final file = File(result.files.single.path!);
+      final ext = file.path.toLowerCase().split('.').last;
+      final isImage = ['jpg', 'jpeg', 'png', 'webp'].contains(ext);
+
+      setState(() {
+        _selectedImage = file;
+        _isDocument = !isImage;
+        _result = null;
+        _selectedMode = null;
+      });
+      _animController.forward(from: 0);
+    } catch (e) {
+      _showError('Gabim gjatë zgjedhjes së skedarit: $e');
+    }
+  }
+
   Future<void> _analyzeImage() async {
     if (_selectedImage == null || _selectedMode == null) return;
-    
+
     setState(() {
       _isLoading = true;
       _result = null;
     });
-    
+
     try {
       final response = await _gemini.analyzeImage(
         imageFile: _selectedImage!,
         mode: _selectedMode!,
-        additionalPrompt: _additionalPromptController.text.isNotEmpty 
-            ? _additionalPromptController.text 
+        additionalPrompt: _additionalPromptController.text.isNotEmpty
+            ? _additionalPromptController.text
             : null,
       );
-      
-      setState(() {
-        _result = response;
-        _isLoading = false;
-      });
+
+      if (mounted) {
+        setState(() {
+          _result = response;
+          _isLoading = false;
+        });
+      }
     } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-      _showError('Gabim: $e');
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        _showError('Gabim: $e');
+      }
     }
   }
 
@@ -169,9 +199,16 @@ class _PhotoLabScreenState extends State<PhotoLabScreen> with SingleTickerProvid
             ),
             const SizedBox(height: 20),
             Text(
-              'Zgjidh burimin e imazhit',
+              'Zgjidh burimin',
               style: theme.textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Foto, PDF ose DOCX',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.secondary,
               ),
             ),
             const SizedBox(height: 24),
@@ -189,7 +226,7 @@ class _PhotoLabScreenState extends State<PhotoLabScreen> with SingleTickerProvid
                     isDark: isDark,
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 12),
                 Expanded(
                   child: _buildSourceOption(
                     icon: Icons.photo_library,
@@ -198,6 +235,19 @@ class _PhotoLabScreenState extends State<PhotoLabScreen> with SingleTickerProvid
                     onTap: () {
                       Navigator.pop(context);
                       _pickImage(ImageSource.gallery);
+                    },
+                    isDark: isDark,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildSourceOption(
+                    icon: Icons.folder_open,
+                    title: 'Skedar',
+                    color: Colors.orange,
+                    onTap: () {
+                      Navigator.pop(context);
+                      _pickDocument();
                     },
                     isDark: isDark,
                   ),
@@ -355,7 +405,7 @@ class _PhotoLabScreenState extends State<PhotoLabScreen> with SingleTickerProvid
                   ),
                 ),
                 Text(
-                  'Ngarko detyra dhe mëso me AI',
+                  'Ngarko foto ose dokument dhe mëso me AI',
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.secondary,
                   ),
@@ -399,15 +449,33 @@ class _PhotoLabScreenState extends State<PhotoLabScreen> with SingleTickerProvid
         child: _selectedImage != null
             ? Stack(
                 children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(18),
-                    child: Image.file(
-                      _selectedImage!,
-                      width: double.infinity,
-                      height: double.infinity,
-                      fit: BoxFit.cover,
+                  if (_isDocument)
+                    Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.description, size: 48, color: theme.colorScheme.secondary),
+                          const SizedBox(height: 8),
+                          Text(
+                            _selectedImage!.path.split(Platform.pathSeparator).last,
+                            style: theme.textTheme.bodyMedium,
+                            textAlign: TextAlign.center,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    )
+                  else
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(18),
+                      child: Image.file(
+                        _selectedImage!,
+                        width: double.infinity,
+                        height: double.infinity,
+                        fit: BoxFit.cover,
+                      ),
                     ),
-                  ),
                   // Change image button
                   Positioned(
                     top: 10,
@@ -438,14 +506,14 @@ class _PhotoLabScreenState extends State<PhotoLabScreen> with SingleTickerProvid
                         color: Colors.green,
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.check, color: Colors.white, size: 16),
-                          SizedBox(width: 4),
+                          Icon(_isDocument ? Icons.description : Icons.check, color: Colors.white, size: 16),
+                          const SizedBox(width: 4),
                           Text(
-                            'Imazhi u ngarkua',
-                            style: TextStyle(
+                            _isDocument ? 'Dokumenti u ngarkua' : 'Imazhi u ngarkua',
+                            style: const TextStyle(
                               color: Colors.white,
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
@@ -476,14 +544,14 @@ class _PhotoLabScreenState extends State<PhotoLabScreen> with SingleTickerProvid
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Kliko për të ngarkuar foto',
+                    'Kliko për të ngarkuar',
                     style: theme.textTheme.bodyLarge?.copyWith(
                       fontWeight: FontWeight.w500,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Bëj foto ose zgjidh nga galeria',
+                    'Foto, PDF, DOCX ose galeri',
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.secondary,
                     ),
@@ -702,7 +770,7 @@ class _PhotoLabScreenState extends State<PhotoLabScreen> with SingleTickerProvid
           ),
           const SizedBox(height: 16),
           Text(
-            'AI po analizon imazhin...',
+            _isDocument ? 'AI po analizon dokumentin...' : 'AI po analizon imazhin...',
             style: theme.textTheme.bodyLarge?.copyWith(
               fontWeight: FontWeight.w500,
             ),

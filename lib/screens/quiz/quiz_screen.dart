@@ -10,7 +10,8 @@ import 'quiz_play_screen.dart';
 import 'create_quiz_screen.dart';
 
 class QuizScreen extends StatefulWidget {
-  const QuizScreen({super.key});
+  final VoidCallback? onBack;
+  const QuizScreen({super.key, this.onBack});
 
   @override
   State<QuizScreen> createState() => _QuizScreenState();
@@ -65,7 +66,7 @@ class _QuizScreenState extends State<QuizScreen> {
                   Row(
                     children: [
                       GestureDetector(
-                        onTap: () => Navigator.pop(context),
+                        onTap: () => widget.onBack != null ? widget.onBack!() : Navigator.pop(context),
                         child: Icon(
                           Icons.arrow_back,
                           color: theme.colorScheme.onSurface,

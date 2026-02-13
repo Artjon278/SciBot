@@ -9,7 +9,8 @@ import '../../core/utils/page_transitions.dart';
 import 'homework_detail_screen.dart';
 
 class HomeworkScreen extends StatefulWidget {
-  const HomeworkScreen({super.key});
+  final VoidCallback? onBack;
+  const HomeworkScreen({super.key, this.onBack});
 
   @override
   State<HomeworkScreen> createState() => _HomeworkScreenState();
@@ -28,6 +29,7 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
   ];
 
   String? _selectedSubject;
+  bool _hideCompleted = false;
 
   @override
   void initState() {
@@ -38,8 +40,14 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
   }
 
   List<HomeworkItem> _filteredItems(List<HomeworkItem> items) {
-    if (_selectedSubject == null) return items;
-    return items.where((h) => h.subject == _selectedSubject).toList();
+    var filtered = items;
+    if (_selectedSubject != null) {
+      filtered = filtered.where((h) => h.subject == _selectedSubject).toList();
+    }
+    if (_hideCompleted) {
+      filtered = filtered.where((h) => !h.isFullySolved).toList();
+    }
+    return filtered;
   }
 
   String _getSubjectEmoji(String subject) {
@@ -88,15 +96,20 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
     try {
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
-        allowedExtensions: ['pdf', 'doc', 'docx', 'txt'],
+        allowedExtensions: ['pdf', 'doc', 'docx', 'txt', 'jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp'],
       );
       if (result == null || result.files.single.path == null) return;
 
       final file = File(result.files.single.path!);
       if (!mounted) return;
 
+      final ext = file.path.toLowerCase().split('.').last;
+      final isImage = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp'].contains(ext);
+
       final hwService = context.read<HomeworkService>();
-      final hw = await hwService.createFromDocument(file);
+      final hw = isImage
+          ? await hwService.createFromPhoto(file)
+          : await hwService.createFromDocument(file);
 
       if (hw != null && mounted) {
         Navigator.push(
@@ -148,7 +161,7 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
             ),
             const SizedBox(height: 6),
             Text(
-              'Foto, galeri ose dokument — AI do të nxjerrë ushtrimet automatikisht',
+              'Foto, PDF ose DOCX — AI do të nxjerrë ushtrimet automatikisht',
               style: theme.textTheme.bodyMedium
                   ?.copyWith(color: theme.colorScheme.secondary),
               textAlign: TextAlign.center,
@@ -171,21 +184,8 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: _buildSourceOption(
-                    icon: Icons.photo_library,
-                    title: 'Galeria',
-                    color: Colors.green,
-                    onTap: () {
-                      Navigator.pop(ctx);
-                      _pickAndExtract(ImageSource.gallery);
-                    },
-                    isDark: isDark,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildSourceOption(
-                    icon: Icons.description,
-                    title: 'Dokument',
+                    icon: Icons.folder_open,
+                    title: 'Skedar',
                     color: Colors.orange,
                     onTap: () {
                       Navigator.pop(ctx);
@@ -252,7 +252,7 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
                 children: [
                   Row(children: [
                     GestureDetector(
-                      onTap: () => Navigator.pop(context),
+                      onTap: () => widget.onBack != null ? widget.onBack!() : Navigator.pop(context),
                       child: Icon(Icons.arrow_back,
                           color: theme.colorScheme.onSurface),
                     ),
@@ -364,8 +364,48 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
                               style: theme.textTheme.bodyLarge
                                   ?.copyWith(fontWeight: FontWeight.w600),
                             ),
-                            Text('${filtered.length} detyrë',
-                                style: theme.textTheme.bodyMedium),
+                            Row(
+                              children: [
+                                GestureDetector(
+                                  onTap: () => setState(() => _hideCompleted = !_hideCompleted),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                    decoration: BoxDecoration(
+                                      color: _hideCompleted
+                                          ? (isDark ? Colors.white : Colors.black)
+                                          : (isDark ? Colors.white.withOpacity(0.08) : Colors.black.withOpacity(0.05)),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          _hideCompleted ? Icons.visibility_off : Icons.visibility,
+                                          size: 14,
+                                          color: _hideCompleted
+                                              ? (isDark ? Colors.black : Colors.white)
+                                              : theme.colorScheme.secondary,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          _hideCompleted ? 'Fshehur' : 'Fshih',
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w500,
+                                            color: _hideCompleted
+                                                ? (isDark ? Colors.black : Colors.white)
+                                                : theme.colorScheme.secondary,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Text('${filtered.length}',
+                                    style: theme.textTheme.bodyMedium),
+                              ],
+                            ),
                           ],
                         ),
                         const SizedBox(height: 12),
@@ -443,7 +483,7 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
                   fontWeight: FontWeight.w700)),
           const SizedBox(height: 6),
           Text(
-              'Foto, galeri ose dokument • AI i ndan ushtrimet • Zgjidh hap pas hapi',
+              'Foto, PDF ose DOCX • AI i ndan ushtrimet • Zgjidh hap pas hapi',
               style: TextStyle(
                   color: Colors.white.withOpacity(0.8), fontSize: 14)),
           const SizedBox(height: 16),
@@ -474,34 +514,6 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
             const SizedBox(width: 8),
             Expanded(
               child: GestureDetector(
-                onTap: () => _pickAndExtract(ImageSource.gallery),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(12),
-                    border:
-                        Border.all(color: Colors.white.withOpacity(0.4)),
-                  ),
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.photo_library,
-                          size: 18, color: Colors.white),
-                      SizedBox(width: 8),
-                      Text('Galeri',
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 13)),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: GestureDetector(
                 onTap: _pickDocument,
                 child: Container(
                   padding: const EdgeInsets.symmetric(vertical: 12),
@@ -514,10 +526,10 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
                   child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.description,
+                      Icon(Icons.folder_open,
                           size: 18, color: Colors.white),
                       SizedBox(width: 8),
-                      Text('PDF',
+                      Text('Skedar',
                           style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w600,

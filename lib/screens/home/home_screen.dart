@@ -3,6 +3,7 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import '../../core/theme/theme_provider.dart';
 import '../../services/auth_service.dart';
 import '../../services/chat_service.dart';
+import '../../services/streak_service.dart';
 import '../../widgets/chat_illustrations.dart';
 import '../../widgets/bot_helper_overlay.dart';
 import '../lab/lab_screen.dart';
@@ -76,6 +77,7 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     }
 
+    context.read<StreakService>().recordActivity();
     await context.read<ChatService>().sendMessage(text);
     _scrollToBottom();
   }
@@ -97,216 +99,225 @@ class _HomeScreenState extends State<HomeScreen> {
     return BotHelperOverlay(
       currentScreen: _currentScreen,
       child: Scaffold(
-        body: SafeArea(
-        child: Column(
+        body: IndexedStack(
+          index: _selectedIndex,
           children: [
-            // Top bar
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            // Tab 0: Chat
+            SafeArea(
+              child: Column(
                 children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color: isDark ? Colors.white : Colors.black,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Icon(
-                          Icons.science_outlined,
-                          color: isDark ? Colors.black : Colors.white,
-                          size: 20,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Text(
-                        'SciBot',
-                        style: theme.textTheme.headlineMedium?.copyWith(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      // Chat history button
-                      IconButton(
-                        onPressed: () async {
-                          final result = await Navigator.push<bool>(
-                            context,
-                            SlidePageRoute(page: const ChatHistoryScreen()),
-                          );
-                          // If a session was loaded, update chat state
-                          if (result == true) {
-                            final chatService = context.read<ChatService>();
-                            if (chatService.messages.isNotEmpty) {
-                              setState(() => _chatStarted = true);
-                              _scrollToBottom();
-                            }
-                          }
-                        },
-                        icon: Icon(
-                          Icons.history_rounded,
-                          color: theme.colorScheme.onSurface.withOpacity(0.6),
-                        ),
-                        tooltip: 'Bisedat e mëparshme',
-                      ),
-                      if (_chatStarted)
-                        IconButton(
-                          onPressed: _resetChat,
-                          icon: Icon(
-                            Icons.add_comment_outlined,
-                            color: theme.colorScheme.onSurface.withOpacity(0.6),
-                          ),
-                          tooltip: 'Bisedë e re',
-                        ),
-                      IconButton(
-                        onPressed: () => themeProvider.toggleTheme(),
-                        icon: Icon(
-                          isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
-                          color: theme.colorScheme.onSurface,
-                        ),
-                      ),
-                      // Profile menu
-                      PopupMenuButton<String>(
-                        icon: Consumer<AuthService>(
-                          builder: (context, auth, _) {
-                            if (auth.photoUrl != null) {
-                              return CircleAvatar(
-                                radius: 16,
-                                backgroundImage: NetworkImage(auth.photoUrl!),
-                                backgroundColor: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
-                              );
-                            }
-                            return CircleAvatar(
-                              radius: 16,
-                              backgroundColor: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
-                              child: Text(
-                                auth.username.isNotEmpty ? auth.username[0].toUpperCase() : '?',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: theme.colorScheme.onSurface,
-                                ),
+                  // Top bar
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(16),
+                              child: Image.asset(
+                                isDark ? 'assets/images/2.png' : 'assets/images/sci.jpeg',
+                                width: 100,
+                                height: 100,
+                                fit: BoxFit.cover,
                               ),
-                            );
-                          },
+                            ),
+                          ],
                         ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        offset: const Offset(0, 45),
-                        onSelected: (value) async {
-                          if (value == 'profile') {
-                            Navigator.push(
-                              context,
-                              SlidePageRoute(page: const ProfileScreen()),
-                            );
-                          } else if (value == 'logout') {
-                            final confirmed = await showDialog<bool>(
-                              context: context,
-                              builder: (ctx) => AlertDialog(
-                                title: const Text('Dil nga llogaria?'),
-                                content: const Text('Je i sigurt që dëshiron të dalësh?'),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(ctx, false),
-                                    child: const Text('Anulo'),
-                                  ),
-                                  ElevatedButton(
-                                    onPressed: () => Navigator.pop(ctx, true),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.red,
-                                      foregroundColor: Colors.white,
-                                    ),
-                                    child: const Text('Dil'),
-                                  ),
-                                ],
-                              ),
-                            );
-                            if (confirmed == true && mounted) {
-                              await context.read<AuthService>().signOut();
-                              if (mounted) {
-                                Navigator.of(context).pushAndRemoveUntil(
-                                  MaterialPageRoute(builder: (_) => const LoginScreen()),
-                                  (route) => false,
+                        Row(
+                          children: [
+                            // Chat history button
+                            IconButton(
+                              onPressed: () async {
+                                final result = await Navigator.push<bool>(
+                                  context,
+                                  SlidePageRoute(page: const ChatHistoryScreen()),
                                 );
-                              }
-                            }
-                          }
-                        },
-                        itemBuilder: (context) {
-                          final auth = context.read<AuthService>();
-                          return [
-                            PopupMenuItem(
-                              enabled: false,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    auth.username,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      color: theme.colorScheme.onSurface,
-                                    ),
-                                  ),
-                                  if (auth.email != null)
-                                    Text(
-                                      auth.email!,
+                                // If a session was loaded, update chat state
+                                if (result == true) {
+                                  final chatService = context.read<ChatService>();
+                                  if (chatService.messages.isNotEmpty) {
+                                    setState(() => _chatStarted = true);
+                                    _scrollToBottom();
+                                  }
+                                }
+                              },
+                              icon: Icon(
+                                Icons.history_rounded,
+                                color: theme.colorScheme.onSurface.withOpacity(0.6),
+                              ),
+                              tooltip: 'Bisedat e mëparshme',
+                            ),
+                            if (_chatStarted)
+                              IconButton(
+                                onPressed: _resetChat,
+                                icon: Icon(
+                                  Icons.add_comment_outlined,
+                                  color: theme.colorScheme.onSurface.withOpacity(0.6),
+                                ),
+                                tooltip: 'Bisedë e re',
+                              ),
+                            IconButton(
+                              onPressed: () => themeProvider.toggleTheme(),
+                              icon: Icon(
+                                isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
+                                color: theme.colorScheme.onSurface,
+                              ),
+                            ),
+                            // Profile menu
+                            PopupMenuButton<String>(
+                              icon: Consumer<AuthService>(
+                                builder: (context, auth, _) {
+                                  if (auth.photoUrl != null) {
+                                    return CircleAvatar(
+                                      radius: 16,
+                                      backgroundImage: NetworkImage(auth.photoUrl!),
+                                      backgroundColor: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
+                                    );
+                                  }
+                                  return CircleAvatar(
+                                    radius: 16,
+                                    backgroundColor: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
+                                    child: Text(
+                                      auth.username.isNotEmpty ? auth.username[0].toUpperCase() : '?',
                                       style: TextStyle(
-                                        fontSize: 12,
-                                        color: theme.colorScheme.secondary,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        color: theme.colorScheme.onSurface,
                                       ),
                                     ),
-                                ],
+                                  );
+                                },
                               ),
-                            ),
-                            const PopupMenuDivider(),
-                            const PopupMenuItem(
-                              value: 'profile',
-                              child: Row(
-                                children: [
-                                  Icon(Icons.person_outline, size: 18),
-                                  SizedBox(width: 10),
-                                  Text('Profili im'),
-                                ],
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
                               ),
+                              offset: const Offset(0, 45),
+                              onSelected: (value) async {
+                                if (value == 'profile') {
+                                  Navigator.push(
+                                    context,
+                                    SlidePageRoute(page: const ProfileScreen()),
+                                  );
+                                } else if (value == 'logout') {
+                                  final confirmed = await showDialog<bool>(
+                                    context: context,
+                                    builder: (ctx) => AlertDialog(
+                                      title: const Text('Dil nga llogaria?'),
+                                      content: const Text('Je i sigurt që dëshiron të dalësh?'),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () => Navigator.pop(ctx, false),
+                                          child: const Text('Anulo'),
+                                        ),
+                                        ElevatedButton(
+                                          onPressed: () => Navigator.pop(ctx, true),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.red,
+                                            foregroundColor: Colors.white,
+                                          ),
+                                          child: const Text('Dil'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                  if (confirmed == true && mounted) {
+                                    await context.read<AuthService>().signOut();
+                                    if (mounted) {
+                                      Navigator.of(context).pushAndRemoveUntil(
+                                        MaterialPageRoute(builder: (_) => const LoginScreen()),
+                                        (route) => false,
+                                      );
+                                    }
+                                  }
+                                }
+                              },
+                              itemBuilder: (context) {
+                                final auth = context.read<AuthService>();
+                                return [
+                                  PopupMenuItem(
+                                    enabled: false,
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          auth.username,
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            color: theme.colorScheme.onSurface,
+                                          ),
+                                        ),
+                                        if (auth.email != null)
+                                          Text(
+                                            auth.email!,
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: theme.colorScheme.secondary,
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                  const PopupMenuDivider(),
+                                  const PopupMenuItem(
+                                    value: 'profile',
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.person_outline, size: 18),
+                                        SizedBox(width: 10),
+                                        Text('Profili im'),
+                                      ],
+                                    ),
+                                  ),
+                                  const PopupMenuItem(
+                                    value: 'logout',
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.logout, size: 18, color: Colors.red),
+                                        SizedBox(width: 10),
+                                        Text('Dil nga llogaria', style: TextStyle(color: Colors.red)),
+                                      ],
+                                    ),
+                                  ),
+                                ];
+                              },
                             ),
-                            const PopupMenuItem(
-                              value: 'logout',
-                              child: Row(
-                                children: [
-                                  Icon(Icons.logout, size: 18, color: Colors.red),
-                                  SizedBox(width: 10),
-                                  Text('Dil nga llogaria', style: TextStyle(color: Colors.red)),
-                                ],
-                              ),
-                            ),
-                          ];
-                        },
-                      ),
-                    ],
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
+
+                  // Main content
+                  Expanded(
+                    child: _chatStarted 
+                        ? _buildChatView(theme, isDark) 
+                        : _buildWelcomeView(theme, isDark),
+                  ),
+
+                  // Chat input
+                  _buildChatInput(theme, isDark),
                 ],
               ),
             ),
-
-            // Main content
-            Expanded(
-              child: _chatStarted 
-                  ? _buildChatView(theme, isDark) 
-                  : _buildWelcomeView(theme, isDark),
-            ),
-
-            // Chat input
-            _buildChatInput(theme, isDark),
+            // Tab 1: Lab
+            LabScreen(onBack: () => setState(() {
+              _selectedIndex = 0;
+              _currentScreen = 'home';
+            })),
+            // Tab 2: Quiz
+            QuizScreen(onBack: () => setState(() {
+              _selectedIndex = 0;
+              _currentScreen = 'home';
+            })),
+            // Tab 3: Homework
+            HomeworkScreen(onBack: () => setState(() {
+              _selectedIndex = 0;
+              _currentScreen = 'home';
+            })),
           ],
         ),
-      ),
       
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
@@ -344,7 +355,15 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         children: [
           const Spacer(flex: 2),
-          
+
+          // Streak badge
+          Consumer<StreakService>(
+            builder: (context, streak, _) {
+              return _buildStreakBadge(streak, isDark);
+            },
+          ),
+          const SizedBox(height: 20),
+
           Text(
             'Përshëndetje, $userName 👋',
             style: theme.textTheme.headlineLarge?.copyWith(
@@ -622,6 +641,70 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _buildStreakBadge(StreakService streak, bool isDark) {
+    final hasStreak = streak.currentStreak > 0;
+    final fireColor = streak.currentStreak >= 7
+        ? Colors.deepOrange
+        : streak.currentStreak >= 3
+            ? Colors.orange
+            : Colors.amber;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      decoration: BoxDecoration(
+        gradient: hasStreak
+            ? LinearGradient(
+                colors: [
+                  fireColor.withOpacity(isDark ? 0.2 : 0.12),
+                  fireColor.withOpacity(isDark ? 0.08 : 0.04),
+                ],
+              )
+            : null,
+        color: hasStreak
+            ? null
+            : (isDark ? Colors.white.withOpacity(0.06) : Colors.black.withOpacity(0.04)),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: hasStreak
+              ? fireColor.withOpacity(0.3)
+              : (isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.08)),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            hasStreak ? '🔥' : '💤',
+            style: const TextStyle(fontSize: 22),
+          ),
+          const SizedBox(width: 10),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                hasStreak ? '${streak.currentStreak} ditë streak!' : 'Fillo streak-un tënd!',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: hasStreak ? fireColor : (isDark ? Colors.white70 : Colors.black54),
+                ),
+              ),
+              Text(
+                hasStreak
+                    ? 'Rekord: ${streak.longestStreak} ditë'
+                    : 'Ndërvepro sot për të filluar',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: isDark ? Colors.white38 : Colors.black38,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildNavItem(BuildContext context, IconData icon, IconData activeIcon, String label, int index, bool isDark) {
     final theme = Theme.of(context);
     final isSelected = _selectedIndex == index;
@@ -638,12 +721,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       ? 'quiz'
                       : 'homework';
         });
-        if (index == 1) {
-          Navigator.push(context, SlidePageRoute(page: const LabScreen()));
-        } else if (index == 2) {
-          Navigator.push(context, SlidePageRoute(page: const QuizScreen()));
-        } else if (index == 3) {
-          Navigator.push(context, SlidePageRoute(page: const HomeworkScreen()));
+        if (index != 0) {
+          context.read<StreakService>().recordActivity();
         }
       },
       child: Container(

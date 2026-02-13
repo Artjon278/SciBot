@@ -11,7 +11,10 @@ import 'services/chat_service.dart';
 import 'services/bot_helper_service.dart';
 import 'services/quiz_stats_service.dart';
 import 'services/homework_service.dart';
-import 'screens/splash/splash_screen.dart';
+import 'services/streak_service.dart';
+import 'screens/auth/login_screen.dart';
+import 'screens/home/home_screen.dart';
+import 'screens/onboarding/onboarding_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -46,6 +49,11 @@ Future<void> main() async {
           ChangeNotifierProvider(create: (_) {
             final service = BotHelperService();
             service.loadPreferences();
+            return service;
+          }),
+          ChangeNotifierProvider(create: (_) {
+            final service = StreakService();
+            service.load();
             return service;
           }),
         ],
@@ -99,7 +107,80 @@ class SciBot extends StatelessWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeProvider.themeMode,
-      home: const SplashScreen(),
+      home: const AuthHandler(),
+    );
+  }
+}
+
+class AuthHandler extends StatefulWidget {
+  const AuthHandler({super.key});
+
+  @override
+  State<AuthHandler> createState() => _AuthHandlerState();
+}
+
+class _AuthHandlerState extends State<AuthHandler> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAuthState();
+    });
+  }
+
+  Future<void> _checkAuthState() async {
+    if (!mounted) return;
+
+    final authService = context.read<AuthService>();
+
+    // Prit derisa auth service të përfundojë ngarkimin
+    while (authService.isLoading) {
+      await Future.delayed(const Duration(milliseconds: 100));
+      if (!mounted) return;
+    }
+
+    if (!mounted) return;
+
+    // Kontrollo nëse përdoruesi është loguar
+    if (!authService.isLoggedIn) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+      );
+      return;
+    }
+
+    // Kontrollo nëse onboarding është përfunduar
+    final botService = context.read<BotHelperService>();
+    while (!botService.isLoaded) {
+      await Future.delayed(const Duration(milliseconds: 100));
+      if (!mounted) return;
+    }
+
+    if (!botService.onboardingCompleted) {
+      // Trego onboarding-un për përdoruesit e rinj
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => OnboardingScreen(
+            onComplete: () async {
+              await botService.completeOnboarding();
+            },
+          ),
+        ),
+      );
+    } else {
+      // Navigo direkt në HomeScreen
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      body: Center(
+        child: CircularProgressIndicator(),
+      ),
     );
   }
 }
