@@ -3,10 +3,8 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import '../../core/theme/theme_provider.dart';
 import '../../services/auth_service.dart';
 import '../../services/chat_service.dart';
-import '../../services/bot_helper_service.dart';
 import '../../widgets/chat_illustrations.dart';
 import '../../widgets/bot_helper_overlay.dart';
-import '../../widgets/scibot_mascot.dart';
 import '../lab/lab_screen.dart';
 import '../quiz/quiz_screen.dart';
 import '../homework/homework_screen.dart';
@@ -208,8 +206,6 @@ class _HomeScreenState extends State<HomeScreen> {
                               context,
                               SlidePageRoute(page: const ProfileScreen()),
                             );
-                          } else if (value == 'toggle_bot') {
-                            context.read<BotHelperService>().toggleBotVisibility();
                           } else if (value == 'logout') {
                             final confirmed = await showDialog<bool>(
                               context: context,
@@ -278,27 +274,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                   SizedBox(width: 10),
                                   Text('Profili im'),
                                 ],
-                              ),
-                            ),
-                            PopupMenuItem(
-                              value: 'toggle_bot',
-                              child: Consumer<BotHelperService>(
-                                builder: (context, botService, _) {
-                                  return Row(
-                                    children: [
-                                      botService.botVisible
-                                          ? const Icon(Icons.visibility_off_outlined, size: 18, color: Colors.cyan)
-                                          : const SciBotAvatar(size: 18),
-                                      const SizedBox(width: 10),
-                                      Text(
-                                        botService.botVisible
-                                            ? 'Fshih SciBot'
-                                            : 'Shfaq SciBot',
-                                        style: const TextStyle(color: Colors.cyan),
-                                      ),
-                                    ],
-                                  );
-                                },
                               ),
                             ),
                             const PopupMenuItem(
