@@ -9,6 +9,7 @@ import '../../widgets/bot_helper_overlay.dart';
 import '../lab/lab_screen.dart';
 import '../quiz/quiz_screen.dart';
 import '../homework/homework_screen.dart';
+import '../audiobooks/audiobooks_screen.dart';
 import '../chat/chat_history_screen.dart';
 import '../auth/login_screen.dart';
 import '../profile/profile_screen.dart';
@@ -316,6 +317,11 @@ class _HomeScreenState extends State<HomeScreen> {
               _selectedIndex = 0;
               _currentScreen = 'home';
             })),
+            // Tab 4: Audio
+            AudiobooksScreen(onBack: () => setState(() {
+              _selectedIndex = 0;
+              _currentScreen = 'home';
+            })),
           ],
         ),
       
@@ -340,6 +346,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 _buildNavItem(context, Icons.science_outlined, Icons.science, 'Laboratori', 1, isDark),
                 _buildNavItem(context, Icons.quiz_outlined, Icons.quiz, 'Kuizi', 2, isDark),
                 _buildNavItem(context, Icons.home_work_outlined, Icons.home_work, 'HW', 3, isDark),
+                _buildNavItem(context, Icons.headphones_outlined, Icons.headphones, 'Audio', 4, isDark),
               ],
             ),
           ),
@@ -719,7 +726,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   ? 'lab'
                   : index == 2
                       ? 'quiz'
-                      : 'homework';
+                      : index == 3
+                          ? 'homework'
+                          : 'audio';
         });
         if (index != 0) {
           context.read<StreakService>().recordActivity();

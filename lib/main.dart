@@ -11,6 +11,7 @@ import 'services/chat_service.dart';
 import 'services/bot_helper_service.dart';
 import 'services/quiz_stats_service.dart';
 import 'services/homework_service.dart';
+import 'services/audiobook_service.dart';
 import 'services/streak_service.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/home/home_screen.dart';
@@ -44,6 +45,10 @@ Future<void> main() async {
           ChangeNotifierProvider(create: (_) => QuizStatsService()),
           ChangeNotifierProxyProvider<AuthService, HomeworkService>(
             create: (context) => HomeworkService(context.read<AuthService>()),
+            update: (context, auth, previous) => previous!..updateAuth(auth),
+          ),
+          ChangeNotifierProxyProvider<AuthService, AudiobookService>(
+            create: (context) => AudiobookService(context.read<AuthService>()),
             update: (context, auth, previous) => previous!..updateAuth(auth),
           ),
           ChangeNotifierProvider(create: (_) {

@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:provider/provider.dart';
 import '../../services/homework_service.dart';
+import '../../services/gemini_service.dart';
+import '../../data/quiz_data.dart';
+import '../../screens/quiz/quiz_play_screen.dart';
+import '../../core/utils/page_transitions.dart';
 
 class ExerciseSolveScreen extends StatefulWidget {
   final String homeworkId;
@@ -19,6 +23,7 @@ class ExerciseSolveScreen extends StatefulWidget {
 
 class _ExerciseSolveScreenState extends State<ExerciseSolveScreen> {
   bool _isSolving = false;
+  bool _isGeneratingQuiz = false;
   String? _solution;
   String? _errorMsg;
 
@@ -57,6 +62,66 @@ class _ExerciseSolveScreenState extends State<ExerciseSolveScreen> {
         _errorMsg = 'Gabim: $e';
         _isSolving = false;
       });
+    }
+  }
+
+  Future<void> _startQuiz() async {
+    if (_solution == null) return;
+
+    setState(() => _isGeneratingQuiz = true);
+
+    try {
+      final gemini = GeminiService();
+      final questions = await gemini.generateQuizFromExercise(
+        exerciseText: widget.exercise.text,
+        exerciseTitle: widget.exercise.title,
+        subject: widget.exercise.subject,
+        solution: _solution!,
+        count: 5,
+      );
+
+      if (!mounted) return;
+
+      if (questions.isEmpty) {
+        setState(() => _isGeneratingQuiz = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Nuk u arrit të gjenerohej kuizi. Provo përsëri.')),
+        );
+        return;
+      }
+
+      final quizQuestions = questions.asMap().entries.map((entry) {
+        final q = entry.value;
+        return QuizQuestion(
+          id: 'hw_quiz_${DateTime.now().millisecondsSinceEpoch}_${entry.key}',
+          question: q['question'] ?? '',
+          options: List<String>.from(q['options'] ?? []),
+          correctIndex: q['correctIndex'] ?? 0,
+          subject: widget.exercise.subject,
+          difficulty: 'mesatar',
+          explanation: q['explanation'],
+          isCustom: true,
+        );
+      }).toList();
+
+      setState(() => _isGeneratingQuiz = false);
+
+      Navigator.push(
+        context,
+        SlidePageRoute(
+          page: QuizPlayScreen(
+            questions: quizQuestions,
+            title: 'Kuiz: ${widget.exercise.title}',
+          ),
+        ),
+      );
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isGeneratingQuiz = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gabim: $e')),
+        );
+      }
     }
   }
 
@@ -389,6 +454,33 @@ class _ExerciseSolveScreenState extends State<ExerciseSolveScreen> {
                 borderRadius: BorderRadius.circular(10),
               ),
               codeblockPadding: const EdgeInsets.all(12),
+            ),
+          ),
+          const SizedBox(height: 20),
+          // ── Quiz test button ──
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: _isGeneratingQuiz ? null : _startQuiz,
+              icon: _isGeneratingQuiz
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    )
+                  : const Icon(Icons.quiz_outlined, size: 20),
+              label: Text(
+                _isGeneratingQuiz ? 'Po gjenerohet kuizi...' : '🎯 Testo njohuritë me kuiz',
+                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.deepPurple,
+                foregroundColor: Colors.white,
+                disabledBackgroundColor: Colors.deepPurple.withOpacity(0.6),
+                disabledForegroundColor: Colors.white70,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              ),
             ),
           ),
         ],

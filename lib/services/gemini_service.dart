@@ -266,6 +266,49 @@ Rregulla: shqip, shkolle e mesme, opsione bindëse, shpjegime koncize.
     }
   }
 
+  /// Gjeneron pyetje kuizi nga një ushtrim i zgjidhur
+  Future<List<Map<String, dynamic>>> generateQuizFromExercise({
+    required String exerciseText,
+    required String exerciseTitle,
+    required String subject,
+    required String solution,
+    int count = 5,
+  }) async {
+    final prompt = '''
+Bazuar në këtë ushtrim të zgjidhur, krijo $count pyetje kuizi për të testuar njohuritë e nxënësit.
+
+Lënda: $subject
+Titulli: $exerciseTitle
+Ushtrimi: $exerciseText
+Zgjidhja: $solution
+
+VETËM JSON array:
+[{"question":"...","options":["A","B","C","D"],"correctIndex":0,"explanation":"..."},...]
+
+Rregulla:
+- correctIndex: 0-3
+- Në shqip, nivel shkolle e mesme
+- Pyetjet duhet të testojnë konceptet e ushtrimit
+- Opsionet duhet të jenë bindëse
+- Shpjegimi: 1-2 fjali koncize
+- Përfshi pyetje për formulat, hapat, konceptet bazë
+''';
+
+    try {
+      final response = await sendMessage(prompt, useHistory: false);
+      final jsonArrayStr = _extractJsonArray(response);
+      if (jsonArrayStr != null) {
+        final decoded = jsonDecode(jsonArrayStr);
+        if (decoded is List) {
+          return decoded.cast<Map<String, dynamic>>();
+        }
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
   /// Shpjegon një koncept
   Future<String> explainConcept(String concept, String subject) async {
     return sendMessage(
@@ -687,6 +730,46 @@ Format:
 ''';
 
     return sendMessage(prompt, useHistory: false);
+  }
+
+  /// Gjeneron skript për mësim audio
+  Future<Map<String, String>?> generateAudioLessonScript({
+    required String subject,
+    required String topic,
+  }) async {
+    final prompt = '''
+Krijo një mësim audio për lëndën "$subject", tema: "$topic".
+Mësimi duhet të jetë për nxënës të shkollës së mesme në Shqipëri, në shqip.
+
+RREGULLA TË RËNDËSISHME:
+- Shkruaj VETËM tekst të thjeshtë prozë (pa simbole matematikore, pa markdown, pa lista me pika)
+- Mos përdor kurrë simbole si: *, #, -, =, +, ^, √, ≠, ≤, ≥
+- Numrat dhe formulat shkruaji me fjalë (p.sh. "x në katror" jo "x²", "rrënja katrore" jo "√")
+- Stili duhet të jetë si një mësues që flet natyrshëm
+- Fillo me një hyrje tërheqëse
+- Shpjego konceptet hap pas hapi me shembuj të thjeshtë
+- Përfundo me një përmbledhje
+- Gjatësia: 400-600 fjalë
+
+VETËM JSON:
+{"title":"Titulli i mësimit","script":"Teksti i plotë i mësimit..."}
+''';
+
+    try {
+      final response = await sendMessage(prompt, useHistory: false);
+      final jsonStr = _extractJson(response);
+      if (jsonStr != null) {
+        final decoded = jsonDecode(jsonStr) as Map<String, dynamic>;
+        return {
+          'title': decoded['title']?.toString() ?? topic,
+          'script': decoded['script']?.toString() ?? '',
+        };
+      }
+      return null;
+    } catch (e) {
+      debugPrint('generateAudioLessonScript error: $e');
+      return null;
+    }
   }
 
   /// Gjeneron flashcards nga teksti i nxjerrë nga imazhi
