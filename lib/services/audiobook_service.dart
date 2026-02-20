@@ -1,5 +1,5 @@
-import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import '../models/audio_lesson.dart';
@@ -70,10 +70,11 @@ class AudiobookService extends ChangeNotifier {
   }
 
   Future<void> loadLessons() async {
-    if (_auth.user?.uid == null) return;
+    final user = _auth.user;
+    if (user == null) return;
     try {
       final snap = await _col
-          .where('userId', isEqualTo: _auth.user?.uid)
+          .where('userId', isEqualTo: user.uid)
           .orderBy('createdAt', descending: true)
           .get();
       _lessons = snap.docs.map((d) => AudioLesson.fromDoc(d)).toList();
@@ -87,7 +88,8 @@ class AudiobookService extends ChangeNotifier {
     required String subject,
     required String topic,
   }) async {
-    if (_auth.user?.uid == null) return null;
+    final user = _auth.user;
+    if (user == null) return null;
     _isGenerating = true;
     notifyListeners();
 
@@ -109,7 +111,7 @@ class AudiobookService extends ChangeNotifier {
 
       final lesson = AudioLesson(
         id: '',
-        userId: _auth.user!.uid,
+        userId: user.uid,
         subject: subject,
         topic: topic,
         title: result['title']!,

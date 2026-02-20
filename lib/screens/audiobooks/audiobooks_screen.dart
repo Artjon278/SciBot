@@ -121,7 +121,7 @@ class _AudiobooksScreenState extends State<AudiobooksScreen> {
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 20),
               itemCount: _subjects.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 8),
+              separatorBuilder: (_, _) => const SizedBox(width: 8),
               itemBuilder: (context, index) {
                 final s = _subjects[index];
                 final selected = s == _selectedSubject;
