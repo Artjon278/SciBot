@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../core/theme/app_theme.dart';
 import '../../core/theme/theme_provider.dart';
 import '../../data/quiz_data.dart';
 import '../../services/quiz_stats_service.dart';
@@ -165,9 +166,7 @@ class _QuizScreenState extends State<QuizScreen> {
                               decoration: BoxDecoration(
                                 color: isSelected
                                     ? (isDark ? Colors.white : Colors.black)
-                                    : (isDark
-                                        ? Colors.white.withOpacity(0.08)
-                                        : Colors.black.withOpacity(0.04)),
+                                    : (AppTheme.subtleFill(isDark)),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
                                   color: isSelected
@@ -301,9 +300,7 @@ class _QuizScreenState extends State<QuizScreen> {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: isDark
-              ? [Colors.blue.shade900, Colors.purple.shade900]
-              : [Colors.blue.shade400, Colors.purple.shade400],
+          colors: AppTheme.primaryGradient(isDark),
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -405,16 +402,12 @@ class _QuizScreenState extends State<QuizScreen> {
         decoration: BoxDecoration(
           color: isSelected
               ? (isDark ? Colors.white : Colors.black)
-              : (isDark
-                  ? Colors.white.withOpacity(0.08)
-                  : Colors.black.withOpacity(0.04)),
+              : (AppTheme.subtleFill(isDark)),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected
                 ? Colors.transparent
-                : (isDark
-                    ? Colors.white.withOpacity(0.1)
-                    : Colors.black.withOpacity(0.08)),
+                : (AppTheme.subtleBorder(isDark)),
           ),
         ),
         child: Row(
@@ -583,9 +576,7 @@ class _QuizScreenState extends State<QuizScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: isDark
-            ? Colors.white.withOpacity(0.06)
-            : Colors.black.withOpacity(0.04),
+        color: AppTheme.subtleFill(isDark),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(

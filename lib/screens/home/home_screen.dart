@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import '../../core/theme/app_theme.dart';
 import '../../core/theme/theme_provider.dart';
 import '../../services/auth_service.dart';
 import '../../services/chat_service.dart';
@@ -174,12 +175,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                     return CircleAvatar(
                                       radius: 16,
                                       backgroundImage: NetworkImage(auth.photoUrl!),
-                                      backgroundColor: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
+                                      backgroundColor: AppTheme.subtleFill(isDark),
                                     );
                                   }
                                   return CircleAvatar(
                                     radius: 16,
-                                    backgroundColor: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
+                                    backgroundColor: AppTheme.subtleFill(isDark),
                                     child: Text(
                                       auth.username.isNotEmpty ? auth.username[0].toUpperCase() : '?',
                                       style: TextStyle(
@@ -215,7 +216,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         ElevatedButton(
                                           onPressed: () => Navigator.pop(ctx, true),
                                           style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.red,
+                                            backgroundColor: AppTheme.error,
                                             foregroundColor: Colors.white,
                                           ),
                                           child: const Text('Dil'),
@@ -275,9 +276,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                     value: 'logout',
                                     child: Row(
                                       children: [
-                                        Icon(Icons.logout, size: 18, color: Colors.red),
+                                        Icon(Icons.logout, size: 18, color: AppTheme.error),
                                         SizedBox(width: 10),
-                                        Text('Dil nga llogaria', style: TextStyle(color: Colors.red)),
+                                        Text('Dil nga llogaria', style: TextStyle(color: AppTheme.error)),
                                       ],
                                     ),
                                   ),
@@ -330,9 +331,7 @@ class _HomeScreenState extends State<HomeScreen> {
           color: theme.scaffoldBackgroundColor,
           border: Border(
             top: BorderSide(
-              color: isDark 
-                  ? Colors.white.withOpacity(0.08) 
-                  : Colors.black.withOpacity(0.06),
+              color: AppTheme.subtleBorder(isDark),
             ),
           ),
         ),
@@ -418,10 +417,10 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: isDark ? Colors.white.withOpacity(0.08) : Colors.black.withOpacity(0.05),
+          color: AppTheme.subtleFill(isDark),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.08),
+            color: AppTheme.subtleBorder(isDark),
           ),
         ),
         child: Text(
@@ -470,8 +469,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
                     color: isUser
-                        ? Colors.blue
-                        : (isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05)),
+                        ? AppTheme.accentColor(isDark)
+                        : (AppTheme.subtleFill(isDark)),
                     borderRadius: BorderRadius.only(
                       topLeft: const Radius.circular(18),
                       topRight: const Radius.circular(18),
@@ -549,7 +548,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
+                    color: AppTheme.subtleFill(isDark),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(Icons.person_outline, color: isDark ? Colors.white70 : Colors.black54, size: 18),
@@ -577,7 +576,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
-              color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
+              color: AppTheme.subtleFill(isDark),
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(18),
                 topRight: Radius.circular(18),
@@ -597,10 +596,10 @@ class _HomeScreenState extends State<HomeScreen> {
       padding: const EdgeInsets.all(16),
       child: Container(
         decoration: BoxDecoration(
-          color: isDark ? Colors.white.withOpacity(0.06) : Colors.black.withOpacity(0.04),
+          color: AppTheme.subtleFill(isDark),
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.08),
+            color: AppTheme.subtleBorder(isDark),
           ),
         ),
         child: Row(
@@ -669,12 +668,12 @@ class _HomeScreenState extends State<HomeScreen> {
             : null,
         color: hasStreak
             ? null
-            : (isDark ? Colors.white.withOpacity(0.06) : Colors.black.withOpacity(0.04)),
+            : (AppTheme.subtleFill(isDark)),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: hasStreak
               ? fireColor.withOpacity(0.3)
-              : (isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.08)),
+              : (AppTheme.subtleBorder(isDark)),
         ),
       ),
       child: Row(
@@ -737,9 +736,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected 
-              ? (isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.06)) 
-              : Colors.transparent,
+          color: isSelected ? AppTheme.subtleFill(isDark) : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
@@ -808,7 +805,7 @@ class _TypingDotsState extends State<_TypingDots> with SingleTickerProviderState
               width: 8,
               height: 8,
               decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.3 + opacity * 0.7),
+                color: AppTheme.accentBlue.withOpacity(0.3 + opacity * 0.7),
                 shape: BoxShape.circle,
               ),
             );

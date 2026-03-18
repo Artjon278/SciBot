@@ -17,6 +17,40 @@ class AppTheme {
   static const Color darkBorder = Color(0xFF333333);
   static const Color darkAccent = Color(0xFFE5E5E5);
 
+  // ── Semantic Colors ──
+  static const Color accentBlue = Color(0xFF4A90D9);
+  static const Color accentBlueDark = Color(0xFF5B9FE8);
+  static const Color success = Color(0xFF34A853);
+  static const Color successDark = Color(0xFF4ABA68);
+  static const Color warning = Color(0xFFE8A33D);
+  static const Color warningDark = Color(0xFFF0B555);
+  static const Color error = Color(0xFFD93025);
+  static const Color errorDark = Color(0xFFEF5350);
+  static const Color info = Color(0xFF7E57C2);
+  static const Color infoDark = Color(0xFF9575CD);
+
+  // ── Gradient Presets ──
+  static List<Color> primaryGradient(bool isDark) => isDark
+      ? [const Color(0xFF1A3A5C), const Color(0xFF2A1A4E)]
+      : [const Color(0xFF4A90D9), const Color(0xFF7E57C2)];
+
+  static List<Color> secondaryGradient(bool isDark) => isDark
+      ? [const Color(0xFF1E2A5C), const Color(0xFF3A1A5C)]
+      : [const Color(0xFF5C6BC0), const Color(0xFF7E57C2)];
+
+  // ── Helpers ──
+  static Color subtleFill(bool isDark) =>
+      isDark ? Colors.white.withOpacity(0.08) : Colors.black.withOpacity(0.05);
+
+  static Color subtleBorder(bool isDark) =>
+      isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.08);
+
+  static Color accentColor(bool isDark) => isDark ? accentBlueDark : accentBlue;
+  static Color successColor(bool isDark) => isDark ? successDark : success;
+  static Color warningColor(bool isDark) => isDark ? warningDark : warning;
+  static Color errorColor(bool isDark) => isDark ? errorDark : error;
+  static Color infoColor(bool isDark) => isDark ? infoDark : info;
+
   static ThemeData lightTheme = ThemeData(
     useMaterial3: true,
     brightness: Brightness.light,

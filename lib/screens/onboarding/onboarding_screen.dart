@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/theme/app_theme.dart';
 import '../home/home_screen.dart';
 
 /// Ekrani i onboarding-ut që shfaqet vetëm hera e parë
@@ -24,35 +25,35 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       description:
           'Jam asistenti yt personal i shkencës! Do të ndihmoj me detyrat, konceptet, dhe eksperimentet.',
       icon: Icons.waving_hand_rounded,
-      color: Colors.blue,
+      color: AppTheme.accentBlue,
     ),
     _OnboardingPage(
       title: 'Pyet çdo gjë! 💬',
       description:
           'Matematikë, Fizikë, Kimi, Biologji - shkruaj pyetjen tënde dhe unë do të përgjigjem hap pas hapi.',
       icon: Icons.chat_bubble_rounded,
-      color: Colors.green,
+      color: AppTheme.success,
     ),
     _OnboardingPage(
       title: 'Laboratori Virtual 🧪',
       description:
           'Bëj eksperimente virtuale pa rrezik! Mëso duke provuar vetë.',
       icon: Icons.science_rounded,
-      color: Colors.orange,
+      color: AppTheme.warning,
     ),
     _OnboardingPage(
       title: 'Kuize & Sfida 🎯',
       description:
           'Testo njohuritë e tua me kuize interaktive. Fito pikë dhe sfido veten!',
       icon: Icons.quiz_rounded,
-      color: Colors.purple,
+      color: AppTheme.info,
     ),
     _OnboardingPage(
       title: 'Unë jam gjithmonë këtu! 🌟',
       description:
           'Mund të më shohësh në çdo ekran. Prek mbi mua për këshilla! Mund edhe të më fshehësh nëse dëshiron.',
       icon: Icons.touch_app_rounded,
-      color: Colors.cyan,
+      color: const Color(0xFF26A69A),
     ),
   ];
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../core/theme/app_theme.dart';
 import '../../services/auth_service.dart';
 import '../../services/streak_service.dart';
 
@@ -50,7 +51,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Text('Emri u përditësua me sukses!'),
               ],
             ),
-            backgroundColor: Colors.green,
+            backgroundColor: AppTheme.success,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
@@ -62,7 +63,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Gabim: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppTheme.error,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
@@ -198,10 +199,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         child: Container(
                                           padding: const EdgeInsets.all(6),
                                           decoration: BoxDecoration(
-                                            color: Colors.green.withOpacity(0.15),
+                                            color: AppTheme.success.withOpacity(0.15),
                                             borderRadius: BorderRadius.circular(6),
                                           ),
-                                          child: const Icon(Icons.check, size: 18, color: Colors.green),
+                                          child: Icon(Icons.check, size: 18, color: AppTheme.successColor(isDark)),
                                         ),
                                       ),
                                       const SizedBox(width: 8),
@@ -215,10 +216,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         child: Container(
                                           padding: const EdgeInsets.all(6),
                                           decoration: BoxDecoration(
-                                            color: Colors.red.withOpacity(0.15),
+                                            color: AppTheme.error.withOpacity(0.15),
                                             borderRadius: BorderRadius.circular(6),
                                           ),
-                                          child: const Icon(Icons.close, size: 18, color: Colors.red),
+                                          child: Icon(Icons.close, size: 18, color: AppTheme.errorColor(isDark)),
                                         ),
                                       ),
                                     ],

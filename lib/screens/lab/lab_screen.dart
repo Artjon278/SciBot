@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../core/theme/app_theme.dart';
 import '../../core/theme/theme_provider.dart';
 import '../../core/utils/page_transitions.dart';
 import '../../data/challenges.dart';
@@ -108,9 +109,7 @@ class _LabScreenState extends State<LabScreen> {
                             decoration: BoxDecoration(
                               color: isSelected
                                   ? (isDark ? Colors.white : Colors.black)
-                                  : (isDark
-                                      ? Colors.white.withOpacity(0.08)
-                                      : Colors.black.withOpacity(0.05)),
+                                  : (AppTheme.subtleFill(isDark)),
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
                                 color: isSelected
@@ -222,7 +221,7 @@ class _LabScreenState extends State<LabScreen> {
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [Colors.blue.withOpacity(0.2), Colors.purple.withOpacity(0.2)],
+                    colors: [AppTheme.accentBlue.withOpacity(0.2), AppTheme.info.withOpacity(0.2)],
                   ),
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -255,11 +254,11 @@ class _LabScreenState extends State<LabScreen> {
             spacing: 8,
             runSpacing: 8,
             children: [
-              _buildFeatureTag('📝 Përmbledh', Colors.blue, isDark),
-              _buildFeatureTag('🎴 Flashcards', Colors.purple, isDark),
-              _buildFeatureTag('❓ Kuiz', Colors.orange, isDark),
-              _buildFeatureTag('🔬 Lab', Colors.green, isDark),
-              _buildFeatureTag('✏️ Zgjidh', Colors.red, isDark),
+              _buildFeatureTag('📝 Përmbledh', AppTheme.accentColor(isDark), isDark),
+              _buildFeatureTag('🎴 Flashcards', AppTheme.infoColor(isDark), isDark),
+              _buildFeatureTag('❓ Kuiz', AppTheme.warningColor(isDark), isDark),
+              _buildFeatureTag('🔬 Lab', AppTheme.successColor(isDark), isDark),
+              _buildFeatureTag('✏️ Zgjidh', AppTheme.errorColor(isDark), isDark),
             ],
           ),
           const SizedBox(height: 16),
@@ -378,13 +377,13 @@ class _LabScreenState extends State<LabScreen> {
     Color difficultyColor;
     switch (challenge.difficulty) {
       case 'lehtë':
-        difficultyColor = Colors.green;
+        difficultyColor = AppTheme.successColor(isDark);
         break;
       case 'mesatar':
-        difficultyColor = Colors.orange;
+        difficultyColor = AppTheme.warningColor(isDark);
         break;
       case 'vështirë':
-        difficultyColor = Colors.red;
+        difficultyColor = AppTheme.errorColor(isDark);
         break;
       default:
         difficultyColor = Colors.grey;

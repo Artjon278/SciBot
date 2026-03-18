@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../core/theme/app_theme.dart';
 import '../../models/audio_lesson.dart';
 import '../../services/audiobook_service.dart';
 import 'generate_lesson_sheet.dart';
@@ -67,9 +68,7 @@ class _AudiobooksScreenState extends State<AudiobooksScreen> {
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: isDark
-                        ? [Colors.deepPurple.shade800, Colors.indigo.shade900]
-                        : [Colors.deepPurple.shade400, Colors.indigo.shade500],
+                    colors: AppTheme.secondaryGradient(isDark),
                   ),
                   borderRadius: BorderRadius.circular(16),
                 ),
@@ -203,17 +202,17 @@ class _AudiobooksScreenState extends State<AudiobooksScreen> {
           MaterialPageRoute(builder: (_) => LessonPlayerScreen(lesson: lesson)),
         ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        tileColor: isDark ? Colors.white.withOpacity(0.06) : Colors.black.withOpacity(0.04),
+        tileColor: AppTheme.subtleFill(isDark),
         leading: Container(
           width: 48,
           height: 48,
           decoration: BoxDecoration(
-            color: (isPlaying ? Colors.deepPurple : theme.colorScheme.primary).withOpacity(0.15),
+            color: (isPlaying ? AppTheme.info : theme.colorScheme.primary).withOpacity(0.15),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(
             isPlaying ? Icons.play_arrow : icon,
-            color: isPlaying ? Colors.deepPurple : theme.colorScheme.primary,
+            color: isPlaying ? AppTheme.info : theme.colorScheme.primary,
           ),
         ),
         title: Text(
@@ -232,7 +231,7 @@ class _AudiobooksScreenState extends State<AudiobooksScreen> {
             IconButton(
               icon: Icon(
                 lesson.isFavorite ? Icons.favorite : Icons.favorite_border,
-                color: lesson.isFavorite ? Colors.red : theme.colorScheme.secondary,
+                color: lesson.isFavorite ? AppTheme.errorColor(isDark) : theme.colorScheme.secondary,
                 size: 20,
               ),
               onPressed: () => service.toggleFavorite(lesson),
@@ -248,7 +247,7 @@ class _AudiobooksScreenState extends State<AudiobooksScreen> {
                       TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Anulo')),
                       ElevatedButton(
                         onPressed: () => Navigator.pop(ctx, true),
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+                        style: ElevatedButton.styleFrom(backgroundColor: AppTheme.error, foregroundColor: Colors.white),
                         child: const Text('Fshi'),
                       ),
                     ],

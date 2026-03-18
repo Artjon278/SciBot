@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:provider/provider.dart';
+import '../../core/theme/app_theme.dart';
 import '../../core/theme/theme_provider.dart';
 import '../../services/homework_service.dart';
 import '../../core/utils/page_transitions.dart';
@@ -173,7 +174,7 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
                   child: _buildSourceOption(
                     icon: Icons.camera_alt,
                     title: 'Kamera',
-                    color: Colors.blue,
+                    color: AppTheme.accentColor(isDark),
                     onTap: () {
                       Navigator.pop(ctx);
                       _pickAndExtract(ImageSource.camera);
@@ -186,7 +187,7 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
                   child: _buildSourceOption(
                     icon: Icons.folder_open,
                     title: 'Skedar',
-                    color: Colors.orange,
+                    color: AppTheme.warningColor(isDark),
                     onTap: () {
                       Navigator.pop(ctx);
                       _pickDocument();
@@ -450,9 +451,7 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: isDark
-              ? [Colors.indigo.shade900, Colors.purple.shade900]
-              : [Colors.indigo.shade400, Colors.purple.shade400],
+          colors: AppTheme.secondaryGradient(isDark),
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -553,16 +552,16 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
     final theme = Theme.of(context);
     return Row(children: [
       _buildStatCard(theme, '${hwService.totalHomework}', 'Gjithsej',
-          Icons.assignment, Colors.blue, isDark),
+          Icons.assignment, AppTheme.accentColor(isDark), isDark),
       const SizedBox(width: 10),
       _buildStatCard(theme, '${hwService.fullyDoneCount}', 'Përfunduar',
-          Icons.check_circle, Colors.green, isDark),
+          Icons.check_circle, AppTheme.successColor(isDark), isDark),
       const SizedBox(width: 10),
       _buildStatCard(theme, '${hwService.inProgressCount}', 'Në punë',
-          Icons.pending, Colors.orange, isDark),
+          Icons.pending, AppTheme.warningColor(isDark), isDark),
       const SizedBox(width: 10),
       _buildStatCard(theme, '${hwService.newCount}', 'Të reja',
-          Icons.fiber_new, Colors.purple, isDark),
+          Icons.fiber_new, AppTheme.infoColor(isDark), isDark),
     ]);
   }
 
@@ -644,13 +643,13 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
     Color progressColor;
     String progressLabel;
     if (hw.isFullySolved) {
-      progressColor = Colors.green;
+      progressColor = AppTheme.successColor(isDark);
       progressLabel = 'Përfunduar';
     } else if (hw.solvedCount > 0) {
-      progressColor = Colors.orange;
+      progressColor = AppTheme.warningColor(isDark);
       progressLabel = '${hw.solvedCount}/${hw.totalCount} zgjidhur';
     } else {
-      progressColor = Colors.blue;
+      progressColor = AppTheme.accentColor(isDark);
       progressLabel = '${hw.totalCount} ushtrime';
     }
 
@@ -661,9 +660,9 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
         decoration: BoxDecoration(
-            color: Colors.red.withOpacity(0.15),
+            color: AppTheme.error.withOpacity(0.15),
             borderRadius: BorderRadius.circular(16)),
-        child: const Icon(Icons.delete_outline, color: Colors.red),
+        child: Icon(Icons.delete_outline, color: AppTheme.errorColor(isDark)),
       ),
       confirmDismiss: (_) async {
         return await showDialog<bool>(
@@ -679,7 +678,7 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
               ElevatedButton(
                 onPressed: () => Navigator.pop(ctx, true),
                 style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
+                    backgroundColor: AppTheme.error,
                     foregroundColor: Colors.white),
                 child: const Text('Fshi'),
               ),
@@ -764,7 +763,7 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
                         horizontal: 10, vertical: 5),
                     decoration: BoxDecoration(
                       color: ex.isSolved
-                          ? Colors.green
+                          ? AppTheme.successColor(isDark)
                               .withOpacity(isDark ? 0.2 : 0.1)
                           : (isDark
                               ? Colors.white.withOpacity(0.06)
@@ -772,20 +771,20 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
                           color: ex.isSolved
-                              ? Colors.green.withOpacity(0.3)
+                              ? AppTheme.successColor(isDark).withOpacity(0.3)
                               : Colors.transparent),
                     ),
                     child:
                         Row(mainAxisSize: MainAxisSize.min, children: [
                       if (ex.isSolved)
-                        const Icon(Icons.check,
-                            size: 12, color: Colors.green),
+                        Icon(Icons.check,
+                            size: 12, color: AppTheme.successColor(isDark)),
                       if (ex.isSolved) const SizedBox(width: 4),
                       Text('Usht. ${ex.number}',
                           style: TextStyle(
                               fontSize: 11,
                               color: ex.isSolved
-                                  ? Colors.green
+                                  ? AppTheme.successColor(isDark)
                                   : theme.colorScheme.secondary)),
                     ]),
                   );
