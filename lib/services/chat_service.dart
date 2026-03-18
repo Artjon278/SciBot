@@ -47,13 +47,13 @@ class ChatService extends ChangeNotifier {
   void setAIMemoryService(AIMemoryService service, {dynamic profile}) {
     _aiMemoryService = service;
     // Vendos system prompt-in dinamik
-    _gemini.customSystemPrompt = service.buildSystemPrompt(profile: profile);
+    _gemini.setSystemPrompt(service.buildSystemPrompt(profile: profile));
   }
 
   /// Përditëso system prompt-in (thirret kur ndryshon profili/kujtesa)
   void refreshSystemPrompt() {
     if (_aiMemoryService != null) {
-      _gemini.customSystemPrompt = _aiMemoryService!.buildSystemPrompt();
+      _gemini.setSystemPrompt(_aiMemoryService!.buildSystemPrompt());
     }
   }
 
