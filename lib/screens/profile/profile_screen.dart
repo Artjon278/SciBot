@@ -7,6 +7,8 @@ import '../../services/gamification_service.dart';
 import '../../services/mastery_service.dart';
 import '../../services/curriculum_service.dart';
 import '../../services/adaptive_ai_service.dart';
+import '../../services/student_profile_service.dart';
+import '../onboarding/onboarding_quiz_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -659,7 +661,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         onTap: _saveUsername,
                         child: Container(
                           padding: const EdgeInsets.all(6),
-                          decoration: BoxDecoration(color: AppTheme.success.withOpacity(0.15), borderRadius: BorderRadius.circular(6)),
+                          decoration: BoxDecoration(color: AppTheme.success.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(6)),
                           child: Icon(Icons.check, size: 18, color: AppTheme.successColor(isDark)),
                         ),
                       ),
@@ -668,7 +670,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         onTap: () => setState(() { _isEditing = false; _usernameController.text = auth.username; }),
                         child: Container(
                           padding: const EdgeInsets.all(6),
-                          decoration: BoxDecoration(color: AppTheme.error.withOpacity(0.15), borderRadius: BorderRadius.circular(6)),
+                          decoration: BoxDecoration(color: AppTheme.error.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(6)),
                           child: Icon(Icons.close, size: 18, color: AppTheme.errorColor(isDark)),
                         ),
                       ),
@@ -690,6 +692,170 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
         );
       },
+    );
+  }
+
+  // ignore: unused_element
+  Widget _buildProfileSection(
+    BuildContext context,
+    StudentProfileService profileService,
+    bool isDark,
+  ) {
+    final theme = Theme.of(context);
+    final profile = profileService.profile;
+
+    final styleEmojis = {
+      'vizual': '🎨', 'logjik': '🧠', 'praktik': '🔬', 'lexues': '📖',
+    };
+    final styleNames = {
+      'vizual': 'Vizual', 'logjik': 'Logjik', 'praktik': 'Praktik', 'lexues': 'Lexues',
+    };
+    final goalNames = {
+      'provim': 'Përgatitje për provim',
+      'nota': 'Nota më të mira',
+      'kuriozitet': 'Kuriozitet',
+    };
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: isDark
+            ? Colors.white.withOpacity(0.04)
+            : Colors.black.withOpacity(0.02),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withOpacity(0.08)
+              : Colors.black.withOpacity(0.06),
+        ),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Icon(Icons.psychology_rounded, size: 20, color: AppTheme.accentBlue),
+              const SizedBox(width: 8),
+              Text(
+                'Profili Kognitiv',
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          if (profile != null) ...[
+            // Stili i të mësuarit
+            _buildProfileRow(
+              context,
+              label: 'Stili i mësimit',
+              value: '${styleEmojis[profile.learningStyle] ?? '🎨'} ${styleNames[profile.learningStyle] ?? profile.learningStyle}',
+              isDark: isDark,
+            ),
+            const SizedBox(height: 10),
+            // Lëndët
+            _buildProfileRow(
+              context,
+              label: 'Lëndët',
+              value: profile.preferredSubjects.join(', '),
+              isDark: isDark,
+            ),
+            const SizedBox(height: 10),
+            // Qëllimi
+            _buildProfileRow(
+              context,
+              label: 'Qëllimi',
+              value: goalNames[profile.goal] ?? profile.goal,
+              isDark: isDark,
+            ),
+            const SizedBox(height: 10),
+            // Koha
+            _buildProfileRow(
+              context,
+              label: 'Koha në ditë',
+              value: '${profile.dailyStudyMinutes} min',
+              isDark: isDark,
+            ),
+          ] else
+            Text(
+              'Nuk ke plotësuar quiz-in e profilit.',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.secondary,
+              ),
+            ),
+
+          const SizedBox(height: 16),
+
+          // Butoni për ri-bërje
+          SizedBox(
+            width: double.infinity,
+            height: 44,
+            child: OutlinedButton.icon(
+              onPressed: () async {
+                if (profile != null) {
+                  await profileService.deleteProfile();
+                }
+                if (context.mounted) {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const OnboardingQuizScreen(navigateToHome: false),
+                    ),
+                  );
+                }
+              },
+              icon: Icon(
+                profile != null ? Icons.refresh_rounded : Icons.play_arrow_rounded,
+                size: 18,
+              ),
+              label: Text(
+                profile != null ? 'Ribëj Quiz-in' : 'Plotëso Quiz-in',
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppTheme.accentBlue,
+                side: BorderSide(color: AppTheme.accentBlue.withOpacity(0.3)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProfileRow(
+    BuildContext context, {
+    required String label,
+    required String value,
+    required bool isDark,
+  }) {
+    final theme = Theme.of(context);
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 100,
+          child: Text(
+            label,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.secondary,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ],
     );
   }
 

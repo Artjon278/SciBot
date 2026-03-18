@@ -44,7 +44,6 @@ Map content to Albanian school grades (6-12). Students should be able to select 
 **Start with #1 and #2.** Security is a blocker for release, and personalization is the core value proposition — everything else builds on those two.
 
 
-
   6. Weekly Report (Raporti Javor)
 
   - Cdo te diele gjeneron raport automatik per javen

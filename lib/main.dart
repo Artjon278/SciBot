@@ -21,9 +21,12 @@ import 'services/weekly_report_service.dart';
 import 'services/adaptive_ai_service.dart';
 import 'services/daily_challenge_service.dart';
 import 'services/notification_service.dart';
+import 'services/student_profile_service.dart';
+import 'services/ai_memory_service.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/onboarding/onboarding_screen.dart';
+import 'screens/onboarding/onboarding_quiz_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -51,6 +54,14 @@ Future<void> main() async {
           ),
           ChangeNotifierProxyProvider<AuthService, AudiobookService>(
             create: (context) => AudiobookService(context.read<AuthService>()),
+            update: (context, auth, previous) => previous!..updateAuth(auth),
+          ),
+          ChangeNotifierProxyProvider<AuthService, StudentProfileService>(
+            create: (context) => StudentProfileService(context.read<AuthService>()),
+            update: (context, auth, previous) => previous!..updateAuth(auth),
+          ),
+          ChangeNotifierProxyProvider<AuthService, AIMemoryService>(
+            create: (context) => AIMemoryService(context.read<AuthService>()),
             update: (context, auth, previous) => previous!..updateAuth(auth),
           ),
           ChangeNotifierProvider(create: (_) {
@@ -193,6 +204,13 @@ class _AuthHandlerState extends State<AuthHandler> {
       if (!mounted) return;
     }
 
+    // Kontrollo nëse profili i studentit ekziston
+    final profileService = context.read<StudentProfileService>();
+    while (!profileService.isLoaded) {
+      await Future.delayed(const Duration(milliseconds: 100));
+      if (!mounted) return;
+    }
+
     if (!botService.onboardingCompleted) {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
@@ -201,6 +219,13 @@ class _AuthHandlerState extends State<AuthHandler> {
               await botService.completeOnboarding();
             },
           ),
+        ),
+      );
+    } else if (!profileService.hasProfile) {
+      // Nëse nuk ka profil, trego quiz-in
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const OnboardingQuizScreen(navigateToHome: true),
         ),
       );
     } else {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
-import '../home/home_screen.dart';
+import 'onboarding_quiz_screen.dart';
 
 /// Ekrani i onboarding-ut që shfaqet vetëm hera e parë
 class OnboardingScreen extends StatefulWidget {
@@ -94,7 +94,9 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     await widget.onComplete();
     if (mounted) {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
+        MaterialPageRoute(
+          builder: (_) => const OnboardingQuizScreen(navigateToHome: true),
+        ),
       );
     }
   }

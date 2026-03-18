@@ -37,6 +37,7 @@ class GeminiService {
     _customSystemPrompt = prompt;
   }
 
+  // System prompt statik (fallback)
   static const String _defaultSystemPrompt = '''
 Ti je SciBot, asistent AI i shkencës për nxënësit e shkollave të mesme në Shqipëri.
 Ekspertizë: Matematikë, Fizikë, Kimi, Biologji.
@@ -53,6 +54,7 @@ Rregulla:
 - Nëse nxënësi gabon, korrigjo me mirësjellje dhe shpjego PSE
 ''';
 
+  /// System prompt dinamik - vendoset nga AIMemoryService ose AdaptiveAIService
   String get _systemPrompt => _customSystemPrompt ?? _defaultSystemPrompt;
 
   /// Dërgon mesazh tek Gemini dhe merr përgjigje me memorie

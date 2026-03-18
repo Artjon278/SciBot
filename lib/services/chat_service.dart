@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'gemini_service.dart';
 import 'chat_storage_service.dart';
+import 'ai_memory_service.dart';
 
 class ChatMessage {
   final String text;
@@ -36,10 +37,25 @@ class ChatService extends ChangeNotifier {
   final List<ChatMessage> _messages = [];
   bool _isTyping = false;
   String? _currentSessionId;
+  AIMemoryService? _aiMemoryService;
 
   List<ChatMessage> get messages => List.unmodifiable(_messages);
   bool get isTyping => _isTyping;
   String? get currentSessionId => _currentSessionId;
+
+  /// Vendos AI Memory Service për kujtesë dinamike
+  void setAIMemoryService(AIMemoryService service, {dynamic profile}) {
+    _aiMemoryService = service;
+    // Vendos system prompt-in dinamik
+    _gemini.customSystemPrompt = service.buildSystemPrompt(profile: profile);
+  }
+
+  /// Përditëso system prompt-in (thirret kur ndryshon profili/kujtesa)
+  void refreshSystemPrompt() {
+    if (_aiMemoryService != null) {
+      _gemini.customSystemPrompt = _aiMemoryService!.buildSystemPrompt();
+    }
+  }
 
   /// Dërgon mesazh dhe merr përgjigje
   Future<void> sendMessage(String text) async {
@@ -71,6 +87,17 @@ class ChatService extends ChangeNotifier {
       
       // Ruaj sesionin automatikisht
       await _saveCurrentSession();
+
+      // Përditëso kujtesën e AI-it pas çdo 4 mesazhesh
+      if (_aiMemoryService != null && _messages.length % 4 == 0) {
+        final recent = _messages
+            .skip(_messages.length > 6 ? _messages.length - 6 : 0)
+            .map((m) => {'role': m.isUser ? 'student' : 'SciBot', 'text': m.text})
+            .toList();
+        _aiMemoryService!.updateAfterChat(recent).then((_) {
+          refreshSystemPrompt();
+        });
+      }
     } catch (e) {
       _messages.add(ChatMessage(
         text: 'Na vjen keq, ndodhi një gabim. Provo përsëri.',
