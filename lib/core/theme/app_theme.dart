@@ -1,3 +1,4 @@
+// SciBot App Theme
 import 'package:flutter/material.dart';
 
 class AppTheme {

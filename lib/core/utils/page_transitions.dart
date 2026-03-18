@@ -1,3 +1,4 @@
+// SciBot Page Transitions
 import 'package:flutter/material.dart';
 
 /// Animacion e bukur për navigimin midis faqeve

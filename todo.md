@@ -1,7 +1,7 @@
 # SciBot - Priority Improvements
 
 ## 1. Security — Move API Keys Server-Side
-The Gemini API key is exposed client-side in `.env`. Anyone can decompile the app and steal it. Build a simple backend proxy (Firebase Cloud Functions is the easiest since you already use Firebase) that handles all Gemini calls. This is **non-negotiable** before any public release.
+The Gemini API key is exposed client-side in `.env`. Anyone can decompile the app and steal it. Build a simple backend proxy (Firebase Cloud Functions is the easiest since you already use Firebase) that handles all Gemini calls. This is **non-negotiable** before any public release. 
 
 ## 2. Make Personalization Real
 The app promises "learning your own special way" but doesn't deliver. Add:

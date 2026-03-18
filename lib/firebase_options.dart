@@ -1,3 +1,4 @@
+// SciBot Firebase Options
 // File generated manually for Firebase configuration.
 // Replace the values below with your actual Firebase project configuration.
 //

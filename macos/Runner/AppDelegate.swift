@@ -1,3 +1,4 @@
+// SciBot macOS App
 import Cocoa
 import FlutterMacOS
 

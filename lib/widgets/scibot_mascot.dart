@@ -1,3 +1,4 @@
+// SciBot Mascot Widget
 import 'package:flutter/material.dart';
 
 /// Widgeti i maskotës SciBot - bot i animuar që ndërvepron me përdoruesin

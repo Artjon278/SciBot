@@ -1,3 +1,4 @@
+// SciBot Onboarding Screen
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import 'onboarding_quiz_screen.dart';

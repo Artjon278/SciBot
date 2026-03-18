@@ -1,3 +1,4 @@
+// SciBot Student Profile Model
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class StudentProfile {

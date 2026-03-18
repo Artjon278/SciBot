@@ -1,3 +1,4 @@
+// SciBot Home Screen
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import '../../core/theme/app_theme.dart';

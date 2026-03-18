@@ -1,4 +1,5 @@
 # Copilot Chat Conversation Export: AI-powered chemistry learning assistant
+<!-- SciBot Planning Document -->
 
 **User:** @Artjon278
 **Thread URL:** https://github.com/copilot/c/dc10aba3-d7b4-4d56-88a3-ec187aae8c1a
