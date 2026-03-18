@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../data/challenges.dart';
 import '../../services/gemini_service.dart';
+import '../../services/gamification_service.dart';
+import '../../services/weekly_report_service.dart';
+import '../../services/streak_service.dart';
 import '../../widgets/science_visualizations.dart';
 
 class ChallengeSolveScreen extends StatefulWidget {
@@ -71,11 +75,20 @@ class _ChallengeSolveScreenState extends State<ChallengeSolveScreen> with Single
       correctAnswer: widget.challenge.correctAnswer,
     );
     
+    if (result['isCorrect'] == true && mounted) {
+      context.read<GamificationService>().awardXP(XPActivity.challengeComplete);
+      context.read<WeeklyReportService>().logActivity('challenge');
+      context.read<StreakService>().recordActivity(
+        subject: widget.challenge.subject,
+        activityType: 'challenge',
+      );
+    }
+
     setState(() {
       _isCheckingAnswer = false;
       _answerResult = result;
     });
-    
+
     _resultAnimController.forward(from: 0);
   }
 

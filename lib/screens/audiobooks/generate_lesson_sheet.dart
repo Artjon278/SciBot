@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../services/audiobook_service.dart';
+import '../../services/gamification_service.dart';
+import '../../services/weekly_report_service.dart';
+import '../../services/streak_service.dart';
 import 'lesson_player_screen.dart';
 
 class GenerateLessonSheet extends StatefulWidget {
@@ -163,7 +166,15 @@ class _GenerateLessonSheetState extends State<GenerateLessonSheet> {
     if (!mounted) return;
 
     if (lesson != null) {
-      Navigator.pop(context); // close sheet
+      if (mounted) {
+        context.read<GamificationService>().awardXP(XPActivity.audioLesson);
+        context.read<WeeklyReportService>().logActivity('audio');
+        context.read<StreakService>().recordActivity(
+          subject: _selectedSubject,
+          activityType: 'audio',
+        );
+      }
+      Navigator.pop(context);
       Navigator.push(
         context,
         MaterialPageRoute(builder: (_) => LessonPlayerScreen(lesson: lesson)),

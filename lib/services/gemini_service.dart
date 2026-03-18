@@ -31,8 +31,13 @@ class GeminiService {
   final List<ChatHistoryItem> _chatHistory = [];
   static const int _maxHistoryLength = 12; // Optimizuar: 12 mesazhe mjaftojnë për kontekst
 
-  // System prompt për SciBot - optimizuar për përgjigje më të mira
-  static const String _systemPrompt = '''
+  String? _customSystemPrompt;
+
+  void setSystemPrompt(String prompt) {
+    _customSystemPrompt = prompt;
+  }
+
+  static const String _defaultSystemPrompt = '''
 Ti je SciBot, asistent AI i shkencës për nxënësit e shkollave të mesme në Shqipëri.
 Ekspertizë: Matematikë, Fizikë, Kimi, Biologji.
 
@@ -47,6 +52,8 @@ Rregulla:
 - Referoju bisedave të mëparshme kur lidhet
 - Nëse nxënësi gabon, korrigjo me mirësjellje dhe shpjego PSE
 ''';
+
+  String get _systemPrompt => _customSystemPrompt ?? _defaultSystemPrompt;
 
   /// Dërgon mesazh tek Gemini dhe merr përgjigje me memorie
   Future<String> sendMessage(String message, {String? context, bool useHistory = true}) async {
