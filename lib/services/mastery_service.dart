@@ -39,10 +39,10 @@ class TopicScore {
 
   double _calculateMastery() {
     if (total == 0) return 0;
-    final recentWeight = 0.7;
-    final overallWeight = 0.3;
-    final recentCorrect = total > 5 ? correct / total : accuracy;
-    return (recentCorrect * recentWeight + accuracy * overallWeight).clamp(0.0, 1.0);
+    // Weight accuracy by confidence: grows toward 1 as attempts increase.
+    // Avoids inflating mastery from a single lucky correct answer.
+    final confidence = total / (total + 5.0);
+    return (accuracy * confidence).clamp(0.0, 1.0);
   }
 
   Map<String, dynamic> toJson() => {

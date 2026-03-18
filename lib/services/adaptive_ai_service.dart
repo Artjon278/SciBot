@@ -73,12 +73,12 @@ class AdaptiveAIService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void recordInteraction({
+  Future<void> recordInteraction({
     required String type,
     int responseTime = 0,
     bool askedFollowUp = false,
     bool usedHint = false,
-  }) {
+  }) async {
     _interactionStats['total'] = (_interactionStats['total'] ?? 0) + 1;
     _interactionStats['$type'] = (_interactionStats['$type'] ?? 0) + 1;
 
@@ -95,7 +95,7 @@ class AdaptiveAIService extends ChangeNotifier {
     if (!_manualOverride) {
       _autoDetectPersonality();
     }
-    _save();
+    await _save();
   }
 
   void _autoDetectPersonality() {

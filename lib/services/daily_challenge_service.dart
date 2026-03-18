@@ -210,13 +210,17 @@ class DailyChallengeService extends ChangeNotifier {
 
     if (_results[today]?.completed == true) {
       if (_results[yesterday]?.completed == true) {
+        // Consecutive days — compute full streak
         _challengeStreak = _calculateStreak();
-      } else if (_challengeStreak == 0) {
+      } else {
+        // Today done but yesterday wasn't — start fresh at 1
         _challengeStreak = 1;
       }
     } else if (_results[yesterday]?.completed != true) {
+      // Neither today nor yesterday completed — streak broken
       _challengeStreak = 0;
     }
+    // If today not done but yesterday was: keep current streak (still time today)
   }
 
   int _calculateStreak() {

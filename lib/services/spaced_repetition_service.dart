@@ -121,9 +121,13 @@ class SpacedRepetitionService extends ChangeNotifier {
   }) {
     final existing = _items.indexWhere((i) => i.question == question);
     if (existing != -1) {
+      // Item already tracked — review with quality based on correctness
       _items[existing].review(wasCorrect ? 4 : 1);
-    } else if (!wasCorrect) {
-      _items.add(ReviewItem(
+    } else {
+      // New item: always add to the deck so it's reviewed later.
+      // Wrong answers get interval=1 (review tomorrow).
+      // Correct answers start with interval=3 (less urgent).
+      final item = ReviewItem(
         id: 'sr_${DateTime.now().millisecondsSinceEpoch}',
         question: question,
         options: options,
@@ -131,7 +135,11 @@ class SpacedRepetitionService extends ChangeNotifier {
         explanation: explanation,
         subject: subject,
         topic: topic,
-      ));
+      );
+      if (wasCorrect) {
+        item.review(4); // Sets interval to 1 then 6 days via SM-2
+      }
+      _items.add(item);
     }
 
     if (_items.length > _maxItems) {

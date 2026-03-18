@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
@@ -122,7 +123,7 @@ Rregulla:
             },
           ],
         }),
-      );
+      ).timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -149,11 +150,13 @@ Rregulla:
         final error = jsonDecode(response.body);
         return 'Gabim: ${error['error']?['message'] ?? 'Diçka shkoi keq'}';
       }
+    } on TimeoutException {
+      return 'Koha e pritjes skadoi. Kontrollo lidhjen tënde.';
     } catch (e) {
       return 'Gabim lidhjeje: $e';
     }
   }
-  
+
   /// Nxjerr JSON objekt nga teksti - gjen { e parë dhe } e fundit
   String? _extractJson(String text) {
     final start = text.indexOf('{');

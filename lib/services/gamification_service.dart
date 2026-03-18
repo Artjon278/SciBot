@@ -177,7 +177,7 @@ class GamificationService extends ChangeNotifier {
     }
 
     await _save();
-    _checkLevelBadges();
+    await _checkLevelBadges();
     notifyListeners();
 
     if (_level > oldLevel) {
@@ -199,10 +199,10 @@ class GamificationService extends ChangeNotifier {
     return _badges[index];
   }
 
-  void _checkLevelBadges() {
-    if (_level >= 5) unlockBadge('level_5');
-    if (_level >= 10) unlockBadge('level_10');
-    if (_level >= 25) unlockBadge('level_25');
+  Future<void> _checkLevelBadges() async {
+    if (_level >= 5) await unlockBadge('level_5');
+    if (_level >= 10) await unlockBadge('level_10');
+    if (_level >= 25) await unlockBadge('level_25');
   }
 
   Future<void> checkStreakBadges(int streak) async {
