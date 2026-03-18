@@ -5,12 +5,15 @@ import '../../core/theme/theme_provider.dart';
 import '../../services/auth_service.dart';
 import '../../services/chat_service.dart';
 import '../../services/streak_service.dart';
+import '../../services/ai_memory_service.dart';
+import '../../services/student_profile_service.dart';
 import '../../widgets/chat_illustrations.dart';
 import '../../widgets/bot_helper_overlay.dart';
 import '../lab/lab_screen.dart';
 import '../quiz/quiz_screen.dart';
 import '../homework/homework_screen.dart';
 import '../audiobooks/audiobooks_screen.dart';
+import '../knowledge_map/knowledge_map_screen.dart';
 import '../chat/chat_history_screen.dart';
 import '../auth/login_screen.dart';
 import '../profile/profile_screen.dart';
@@ -43,6 +46,14 @@ class _HomeScreenState extends State<HomeScreen> {
       if (chatService.messages.isNotEmpty) {
         setState(() => _chatStarted = true);
       }
+
+      // Vendos AI Memory në ChatService
+      final aiMemory = context.read<AIMemoryService>();
+      final profile = context.read<StudentProfileService>();
+      chatService.setAIMemoryService(
+        aiMemory,
+        profile: profile.profile,
+      );
     });
   }
 
@@ -323,6 +334,11 @@ class _HomeScreenState extends State<HomeScreen> {
               _selectedIndex = 0;
               _currentScreen = 'home';
             })),
+            // Tab 5: Knowledge Map
+            KnowledgeMapScreen(onBack: () => setState(() {
+              _selectedIndex = 0;
+              _currentScreen = 'home';
+            })),
           ],
         ),
       
@@ -337,15 +353,16 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _buildNavItem(context, Icons.chat_bubble_outline, Icons.chat_bubble, 'Chat', 0, isDark),
-                _buildNavItem(context, Icons.science_outlined, Icons.science, 'Laboratori', 1, isDark),
+                _buildNavItem(context, Icons.science_outlined, Icons.science, 'Lab', 1, isDark),
                 _buildNavItem(context, Icons.quiz_outlined, Icons.quiz, 'Kuizi', 2, isDark),
                 _buildNavItem(context, Icons.home_work_outlined, Icons.home_work, 'HW', 3, isDark),
                 _buildNavItem(context, Icons.headphones_outlined, Icons.headphones, 'Audio', 4, isDark),
+                _buildNavItem(context, Icons.map_outlined, Icons.map, 'Harta', 5, isDark),
               ],
             ),
           ),
@@ -727,14 +744,16 @@ class _HomeScreenState extends State<HomeScreen> {
                       ? 'quiz'
                       : index == 3
                           ? 'homework'
-                          : 'audio';
+                          : index == 4
+                              ? 'audio'
+                              : 'knowledge_map';
         });
         if (index != 0) {
           context.read<StreakService>().recordActivity();
         }
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected ? AppTheme.subtleFill(isDark) : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
@@ -745,13 +764,13 @@ class _HomeScreenState extends State<HomeScreen> {
             Icon(
               isSelected ? activeIcon : icon,
               color: isSelected ? theme.colorScheme.onSurface : theme.colorScheme.secondary,
-              size: 24,
+              size: 22,
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 2),
             Text(
               label,
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 10,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                 color: isSelected ? theme.colorScheme.onSurface : theme.colorScheme.secondary,
               ),
