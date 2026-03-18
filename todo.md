@@ -42,3 +42,58 @@ Map content to Albanian school grades (6-12). Students should be able to select 
 ---
 
 **Start with #1 and #2.** Security is a blocker for release, and personalization is the core value proposition — everything else builds on those two.
+
+
+
+  6. Weekly Report (Raporti Javor)
+
+  - Cdo te diele gjeneron raport automatik per javen
+  - Permban: sa ore mesove, sa tema perfundove, sa quiz bere
+  - Tregon pikat e forta te javes: "U permiresove ne termodinamike me 20%"
+  - Tregon pikat per fokus: "Algjebra ka nevoje per me shume praktike"
+  - Krahason me javen e kaluar (progres ose regres)
+  - Jep 3 objektiva konkrete per javen e ardhshme
+  - Mund te ndertohet si PDF ose te ndahet me prinderit
+
+  ---
+  7. Challenge Mode (Menyra e Sfides)
+
+  - Garë me veten: rezultati i djeshëm vs sot per te njejten teme
+  - Leaderboard anonim: renditet sipas pikeve javore (pa emra, vetem avatare)
+  - Daily Challenge: nje sfide e re cdo dite, e njejte per te gjithe studentet
+  - Streak sfidash: sa dite rresht ke perfunduar Daily Challenge
+  - Badge/Achievement sistem: "Mbreti i Fizikes", "7 dite rresht", "100 pergjigje te
+  sakta"
+  - XP (experience points) per cdo aktivitet: quiz, detyre, bisede, sfide
+
+  ---
+  8. Personaliteti Adaptiv i AI-it
+
+  - AI zbulon personalitetin e studentit me kohe (jo vetem nga onboarding quiz)
+  - Per student te shpejte: pergjigje direkte, pa hyrje te gjata, me shume sfida
+  - Per student qe dyshon ne vete: me shume inkurajim, celebron cdo sukses te vogel
+  - Per student kurioz: jep "fun facts", lidh temat me jeten reale
+  - Per student qe ngutet: jep permbledhje te shkurtra, bullet points
+  - Toni ndryshon sipas lendes: me formal ne matematike, me i lire ne biologji
+  - Studenti mund te zgjedhe manualisht: "Dua AI me strikt" ose "Dua AI miqesor"
+
+  ---
+  9. Study Streaks+ (Streak i Avancuar)
+
+  - Jo vetem "hape app-in" por "meso dicka te re" per te ruajtur streak-un
+  - Streak per lende: sa dite rresht ke mesuar fizike, matematike, etj
+  - Milestone rewards: ne 7 dite, 30 dite, 100 dite - badge speciale
+  - Freeze: 1 dite ne jave mund ta "ngrish" streak-un pa e humbur
+  - Weekly goal: vendos vete sa minuta/dite do mesosh, streak llogaritet vetem nese e
+  arrin
+  - Vizualizim kalendarik: si GitHub contributions graph per mesimin tend
+
+  ---
+  10. Smart Notifications (Njoftimet Inteligjente)
+
+  - Kujton studentin ne oren qe ai zakonisht meson (meson nga sjellja)
+  - "Ke 3 dite pa mesuar fizike, po e humb streak-un!"
+  - "Tema X po te harrohet, bej nje quiz te shpejte"
+  - "Raporti javor eshte gati, shikoje!"
+  - "Sfida e dites eshte gati, 47 studente e kane perfunduar tashme"
+  - Frekuenca e njoftimeve adaptohet: nese studenti i injoron, ulen automatikisht
