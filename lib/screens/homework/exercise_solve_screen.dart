@@ -3,6 +3,9 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:provider/provider.dart';
 import '../../services/homework_service.dart';
 import '../../services/gemini_service.dart';
+import '../../services/gamification_service.dart';
+import '../../services/weekly_report_service.dart';
+import '../../services/streak_service.dart';
 import '../../data/quiz_data.dart';
 import '../../screens/quiz/quiz_play_screen.dart';
 import '../../core/utils/page_transitions.dart';
@@ -47,6 +50,14 @@ class _ExerciseSolveScreenState extends State<ExerciseSolveScreen> {
       );
 
       if (result != null) {
+        if (mounted) {
+          context.read<GamificationService>().awardXP(XPActivity.homeworkSolved);
+          context.read<WeeklyReportService>().logActivity('homework');
+          context.read<StreakService>().recordActivity(
+            subject: widget.exercise.subject,
+            activityType: 'homework',
+          );
+        }
         setState(() {
           _solution = result;
           _isSolving = false;

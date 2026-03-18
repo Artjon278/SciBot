@@ -13,27 +13,29 @@ import 'services/quiz_stats_service.dart';
 import 'services/homework_service.dart';
 import 'services/audiobook_service.dart';
 import 'services/streak_service.dart';
+import 'services/gamification_service.dart';
+import 'services/mastery_service.dart';
+import 'services/spaced_repetition_service.dart';
+import 'services/curriculum_service.dart';
+import 'services/weekly_report_service.dart';
+import 'services/adaptive_ai_service.dart';
+import 'services/daily_challenge_service.dart';
+import 'services/notification_service.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/onboarding/onboarding_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   try {
-    // Inicializo Firebase
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-    
-    // Ngarko variablat e mjedisit
     await dotenv.load(fileName: '.env');
-    
-    // Vendos stilin e system UI
+
     SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-      ),
+      const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
     );
 
     runApp(
@@ -61,6 +63,46 @@ Future<void> main() async {
             service.load();
             return service;
           }),
+          ChangeNotifierProvider(create: (_) {
+            final service = GamificationService();
+            service.load();
+            return service;
+          }),
+          ChangeNotifierProvider(create: (_) {
+            final service = MasteryService();
+            service.load();
+            return service;
+          }),
+          ChangeNotifierProvider(create: (_) {
+            final service = SpacedRepetitionService();
+            service.load();
+            return service;
+          }),
+          ChangeNotifierProvider(create: (_) {
+            final service = CurriculumService();
+            service.load();
+            return service;
+          }),
+          ChangeNotifierProvider(create: (_) {
+            final service = WeeklyReportService();
+            service.load();
+            return service;
+          }),
+          ChangeNotifierProvider(create: (_) {
+            final service = AdaptiveAIService();
+            service.load();
+            return service;
+          }),
+          ChangeNotifierProvider(create: (_) {
+            final service = DailyChallengeService();
+            service.load();
+            return service;
+          }),
+          ChangeNotifierProvider(create: (_) {
+            final service = NotificationService();
+            service.init();
+            return service;
+          }),
         ],
         child: const SciBot(),
       ),
@@ -79,16 +121,9 @@ Future<void> main() async {
                 children: [
                   const Icon(Icons.error_outline, size: 48, color: Colors.red),
                   const SizedBox(height: 20),
-                  const Text(
-                    'Gabim në inicializimin e aplikacionit',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
+                  const Text('Gabim në inicializimin e aplikacionit', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 10),
-                  Text(
-                    e.toString(),
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 14),
-                  ),
+                  Text(e.toString(), textAlign: TextAlign.center, style: const TextStyle(fontSize: 14)),
                 ],
               ),
             ),
@@ -138,7 +173,6 @@ class _AuthHandlerState extends State<AuthHandler> {
 
     final authService = context.read<AuthService>();
 
-    // Prit derisa auth service të përfundojë ngarkimin
     while (authService.isLoading) {
       await Future.delayed(const Duration(milliseconds: 100));
       if (!mounted) return;
@@ -146,7 +180,6 @@ class _AuthHandlerState extends State<AuthHandler> {
 
     if (!mounted) return;
 
-    // Kontrollo nëse përdoruesi është loguar
     if (!authService.isLoggedIn) {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => const LoginScreen()),
@@ -154,7 +187,6 @@ class _AuthHandlerState extends State<AuthHandler> {
       return;
     }
 
-    // Kontrollo nëse onboarding është përfunduar
     final botService = context.read<BotHelperService>();
     while (!botService.isLoaded) {
       await Future.delayed(const Duration(milliseconds: 100));
@@ -162,7 +194,6 @@ class _AuthHandlerState extends State<AuthHandler> {
     }
 
     if (!botService.onboardingCompleted) {
-      // Trego onboarding-un për përdoruesit e rinj
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
           builder: (_) => OnboardingScreen(
@@ -173,7 +204,6 @@ class _AuthHandlerState extends State<AuthHandler> {
         ),
       );
     } else {
-      // Navigo direkt në HomeScreen
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => const HomeScreen()),
       );
@@ -182,10 +212,6 @@ class _AuthHandlerState extends State<AuthHandler> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: CircularProgressIndicator(),
-      ),
-    );
+    return const Scaffold(body: Center(child: CircularProgressIndicator()));
   }
 }

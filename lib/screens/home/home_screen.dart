@@ -5,6 +5,12 @@ import '../../core/theme/theme_provider.dart';
 import '../../services/auth_service.dart';
 import '../../services/chat_service.dart';
 import '../../services/streak_service.dart';
+import '../../services/gamification_service.dart';
+import '../../services/spaced_repetition_service.dart';
+import '../../services/adaptive_ai_service.dart';
+import '../../services/curriculum_service.dart';
+import '../../services/gemini_service.dart';
+import '../../services/weekly_report_service.dart';
 import '../../widgets/chat_illustrations.dart';
 import '../../widgets/bot_helper_overlay.dart';
 import '../lab/lab_screen.dart';
@@ -14,6 +20,7 @@ import '../audiobooks/audiobooks_screen.dart';
 import '../chat/chat_history_screen.dart';
 import '../auth/login_screen.dart';
 import '../profile/profile_screen.dart';
+import '../dashboard/dashboard_screen.dart';
 import '../../core/utils/page_transitions.dart';
 import 'package:provider/provider.dart';
 
@@ -43,7 +50,15 @@ class _HomeScreenState extends State<HomeScreen> {
       if (chatService.messages.isNotEmpty) {
         setState(() => _chatStarted = true);
       }
+      _updateAIPrompt();
     });
+  }
+
+  void _updateAIPrompt() {
+    final ai = context.read<AdaptiveAIService>();
+    final curriculum = context.read<CurriculumService>();
+    final prompt = ai.buildSystemPrompt(gradeContext: curriculum.getContextForAI());
+    GeminiService().setSystemPrompt(prompt);
   }
 
   @override
@@ -71,7 +86,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (text.isEmpty) return;
 
     _chatController.clear();
-    
+
     if (!_chatStarted) {
       setState(() {
         _chatStarted = true;
@@ -79,7 +94,10 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     }
 
+    _updateAIPrompt();
     context.read<StreakService>().recordActivity();
+    context.read<GamificationService>().awardXP(XPActivity.chatQuestion);
+    context.read<WeeklyReportService>().logActivity('chat');
     await context.read<ChatService>().sendMessage(text);
     _scrollToBottom();
   }
@@ -323,6 +341,11 @@ class _HomeScreenState extends State<HomeScreen> {
               _selectedIndex = 0;
               _currentScreen = 'home';
             })),
+            // Tab 5: Dashboard
+            DashboardScreen(onBack: () => setState(() {
+              _selectedIndex = 0;
+              _currentScreen = 'home';
+            })),
           ],
         ),
       
@@ -342,10 +365,11 @@ class _HomeScreenState extends State<HomeScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _buildNavItem(context, Icons.chat_bubble_outline, Icons.chat_bubble, 'Chat', 0, isDark),
-                _buildNavItem(context, Icons.science_outlined, Icons.science, 'Laboratori', 1, isDark),
-                _buildNavItem(context, Icons.quiz_outlined, Icons.quiz, 'Kuizi', 2, isDark),
+                _buildNavItem(context, Icons.science_outlined, Icons.science, 'Lab', 1, isDark),
+                _buildNavItem(context, Icons.quiz_outlined, Icons.quiz, 'Kuiz', 2, isDark),
                 _buildNavItem(context, Icons.home_work_outlined, Icons.home_work, 'HW', 3, isDark),
                 _buildNavItem(context, Icons.headphones_outlined, Icons.headphones, 'Audio', 4, isDark),
+                _buildNavItem(context, Icons.dashboard_outlined, Icons.dashboard, 'Paneli', 5, isDark),
               ],
             ),
           ),
@@ -719,15 +743,7 @@ class _HomeScreenState extends State<HomeScreen> {
       onTap: () {
         setState(() {
           _selectedIndex = index;
-          _currentScreen = index == 0
-              ? 'home'
-              : index == 1
-                  ? 'lab'
-                  : index == 2
-                      ? 'quiz'
-                      : index == 3
-                          ? 'homework'
-                          : 'audio';
+          _currentScreen = ['home', 'lab', 'quiz', 'homework', 'audio', 'dashboard'][index];
         });
         if (index != 0) {
           context.read<StreakService>().recordActivity();

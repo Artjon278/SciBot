@@ -3,6 +3,11 @@ import 'package:provider/provider.dart';
 import 'dart:async';
 import '../../data/quiz_data.dart';
 import '../../services/quiz_stats_service.dart';
+import '../../services/gamification_service.dart';
+import '../../services/spaced_repetition_service.dart';
+import '../../services/mastery_service.dart';
+import '../../services/weekly_report_service.dart';
+import '../../services/streak_service.dart';
 
 class QuizPlayScreen extends StatefulWidget {
   final List<QuizQuestion> questions;
@@ -100,7 +105,6 @@ class _QuizPlayScreenState extends State<QuizPlayScreen> {
   }
 
   void _showResults() {
-    // Save quiz result to stats
     context.read<QuizStatsService>().addResult(
       title: widget.title,
       subject: widget.questions.isNotEmpty ? widget.questions.first.subject : null,
@@ -108,9 +112,42 @@ class _QuizPlayScreenState extends State<QuizPlayScreen> {
       correctAnswers: _score,
     );
 
+    final percentage = (_score / widget.questions.length * 100).round();
+
+    final gamification = context.read<GamificationService>();
+    gamification.awardXP(XPActivity.quizComplete);
+    if (_score == widget.questions.length) gamification.awardXP(XPActivity.quizPerfect);
+    gamification.unlockBadge('first_quiz');
+
+    final sr = context.read<SpacedRepetitionService>();
+    final masteryService = context.read<MasteryService>();
+    for (int i = 0; i < widget.questions.length; i++) {
+      final q = widget.questions[i];
+      final wasCorrect = _userAnswers[i] == q.correctIndex;
+      sr.addFromQuiz(
+        question: q.question,
+        options: q.options,
+        correctIndex: q.correctIndex,
+        explanation: q.explanation,
+        subject: q.subject,
+        topic: widget.title,
+        wasCorrect: wasCorrect,
+      );
+      masteryService.recordAnswer(subject: q.subject, topic: widget.title, isCorrect: wasCorrect);
+    }
+
+    context.read<WeeklyReportService>().logActivity('quiz', data: {
+      'total': widget.questions.length,
+      'correct': _score,
+    });
+
+    context.read<StreakService>().recordActivity(
+      subject: widget.questions.isNotEmpty ? widget.questions.first.subject : null,
+      activityType: 'quiz',
+    );
+
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final percentage = (_score / widget.questions.length * 100).round();
 
     showModalBottomSheet(
       context: context,
